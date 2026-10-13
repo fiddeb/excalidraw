@@ -1,4 +1,30 @@
 {
+  "ringSegment": {
+    "description": "Ersätt markerad ellips med ett cirkulärt ringsegment med samma centrum. Förhandsvisningen visar geometrin; resultatet behåller formens fyllningsstil.",
+    "outerRadius": "Ytterradie",
+    "innerRadius": "Innerradie",
+    "startAngle": "Startvinkel (°)",
+    "endAngle": "Slutvinkel (°)",
+    "preview": "Förhandsvisning av ringsegment",
+    "anglesHint": "0° pekar åt höger. Positiva vinklar går medurs. Ange innerradie 0 för en sektor.",
+    "invalid": "Använd radier 0 ≤ inner < ytter ≤ 10000 och vinkelspann från 0,1° till mindre än 360°. Vinklar måste vara mellan −3600° och 3600°. Hela ringar stöds inte.",
+    "create": "Ersätt ellips"
+  },
+  "shapeUnion": {
+    "invalid": "Union kräver enkla slutna konturer utan korsningar eller återspårade kanter. Originalformerna har behållits.",
+    "holes": "Denna union skulle skapa ett hål. Hål med redigerbara konturer stöds ännu inte; originalformerna har behållits.",
+    "tooComplex": "Konturerna är för komplexa för union. Minska antalet punkter eller markera färre former. Originalformerna har behållits.",
+    "empty": "Unionen saknar yta. Originalformerna har behållits.",
+    "failed": "Konturerna kunde inte förenas. Originalformerna har behållits."
+  },
+  "shapeBoolean": {
+    "invalid": "Operationen kräver enkla slutna konturer utan korsningar eller återspårade kanter. Originalformerna har behållits.",
+    "holes": "Operationen skulle skapa ett hål. Hål med redigerbara konturer stöds ännu inte; originalformerna har behållits.",
+    "tooComplex": "Konturerna är för komplexa. Minska antalet punkter eller markera färre former. Originalformerna har behållits.",
+    "empty": "Operationen saknar yta. Originalformerna har behållits.",
+    "failed": "Operationen kunde inte slutföras. Originalformerna har behållits.",
+    "emptyResult": "Resultatet saknar yta. De markerade formerna togs bort. Ångra för att återställa dem."
+  },
   "labels": {
     "signUp": "Registrera dig",
     "signIn": "Logga in",
@@ -154,6 +180,28 @@
       "hint": "Skriv eller klistra in din länk här",
       "goToElement": "Gå till målelementet"
     },
+    "createRingSegment": "Skapa ringsegment",
+    "createRingSegmentDescription": "Ersätt markerad ellips med ett redigerbart cirkulärt ringsegment",
+    "convertShapeToLine": "Konvertera till redigerbar kontur",
+    "convertShapeToLineDescription": "Ersätt formen med en sluten linje med redigerbara punkter; kurvor approximeras. Ej tillgängligt för former med bunden text eller pilar.",
+    "convertFreeDrawToLine": "Konvertera till redigerbar linje",
+    "convertFreeDrawToLineDescription": "Förenkla pennstrecket till redigerbara punkter med jämn linjebredd",
+    "joinLines": "Sammanfoga linjer",
+    "joinLinesDescription": "Koppla ihop närmaste ändpunkter med den översta linjens stil; kurvor blir redigerbara linjesegment",
+    "intersectionShapes": "Behåll gemensam yta",
+    "intersectionShapesDescription": "Behåll endast ytan som alla markerade former delar. Översta formens stil och lager används. Resultat med hål stoppas. Ett tomt resultat tar bort originalen; ångra återställer dem.",
+    "differenceShapes": "Subtrahera från understa formen",
+    "differenceShapesDescription": "Subtrahera alla andra markerade former från den understa formen. Behåll utgångsformens stil, grupper och lager. Resultat med hål stoppas. Ett tomt resultat tar bort originalen; ångra återställer dem.",
+    "xorShapes": "Exkludera överlappning (XOR)",
+    "xorShapesDescription": "Behåll ytor som täcks av ett udda antal markerade former. Med två former försvinner den gemensamma ytan. Översta formens stil och lager används. Resultat med hål stoppas. Ett tomt resultat tar bort originalen; ångra återställer dem.",
+    "unionShapes": "Förena former",
+    "unionShapesDescription": "Förena rektanglar, ellipser, diamanter och slutna konturer med raka segment. Översta formens stil används. Separata ytor förblir separata; resultat med hål stöds inte.",
+    "splitLine": "Dela vid markerade punkter",
+    "splitLineDescription": "Dela linjen med raka segment vid markerade punkter. Slutna konturer förlorar fyllningen. En enda delningspunkt ger separata ändpunkter på samma plats; dra en ändpunkt för att öppna ett mellanrum.",
+    "reduceLinePoints": "Minska antal punkter",
+    "reduceLinePointsDescription": "Ta bort ungefär en fjärdedel av punkterna i en rak linje eller kontur. Upprepa för att förenkla mer; ångra för att återställa detaljer. Formen kan ändras.",
+    "closeLine": "Slut kontur",
+    "closeLineDescription": "Förbind slutpunkten med startpunkten och välj sedan en bakgrundsfärg för att fylla konturen",
     "lineEditor": {
       "edit": "Redigera linje",
       "editArrow": "Redigera pil"

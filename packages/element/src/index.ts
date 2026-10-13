@@ -107,3 +107,9 @@ export * from "./zindex";
 export * from "./arrows/helpers";
 export * from "./arrowheads";
 export * from "./convertToShape";
+export * from "./freeDrawToLine";
+
+export * from "./lineOperations";
+export * from "./shapeToLine";
+export * from "./ringSegment";
+export * from "./booleanOperations";

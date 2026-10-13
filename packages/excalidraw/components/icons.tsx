@@ -2387,6 +2387,32 @@ export const gridIcon = createIcon(
   tablerIconProps,
 );
 
+// Boolean-area icons use the same two squares in fixed geometric positions.
+// The filled region represents the result; mirroring would change the base
+// shown for difference, so these icons retain their orientation in RTL.
+export const booleanIntersectionIcon = createIcon(
+  <g strokeWidth={1.5}>
+    <rect x="3" y="3" width="12" height="12" />
+    <rect x="9" y="9" width="12" height="12" />
+    <path d="M9 9h6v6H9z" fill="currentColor" stroke="none" />
+  </g>,
+  tablerIconProps,
+);
+export const booleanDifferenceIcon = createIcon(
+  <g strokeWidth={1.5}>
+    <rect x="9" y="9" width="12" height="12" strokeDasharray="2 2" />
+    <path d="M3 3h12v6H9v6H3z" fill="currentColor" />
+  </g>,
+  tablerIconProps,
+);
+export const booleanXorIcon = createIcon(
+  <g strokeWidth={1.5}>
+    <path d="M3 3h12v6H9v6H3z M15 9h6v12H9v-6h6z" fill="currentColor" />
+    <path d="M9 9h6v6H9z" />
+  </g>,
+  tablerIconProps,
+);
+
 export const lineEditorIcon = createIcon(
   <g strokeWidth={1.5}>
     <path stroke="none" d="M0 0h24v24H0z" fill="none" />

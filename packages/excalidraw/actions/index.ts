@@ -94,3 +94,20 @@ export { actionToggleLinearEditor } from "./actionLinearEditor";
 export { actionToggleSearchMenu } from "./actionToggleSearchMenu";
 
 export { actionToggleCropEditor } from "./actionCropEditor";
+
+export {
+  actionUnionShapes,
+  actionIntersectionShapes,
+  actionDifferenceShapes,
+  actionXorShapes,
+} from "./actionUnionShapes";
+export { actionCreateRingSegment } from "./actionCreateRingSegment";
+export { actionConvertShapeToLine } from "./actionConvertShapeToLine";
+export { actionConvertFreeDrawToLine } from "./actionConvertFreeDrawToLine";
+
+export {
+  actionJoinLines,
+  actionCloseLine,
+  actionReduceLinePoints,
+  actionSplitLine,
+} from "./actionLineOperations";

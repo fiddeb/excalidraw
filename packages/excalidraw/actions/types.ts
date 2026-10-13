@@ -143,7 +143,18 @@ export type ActionName =
   | "wrapSelectionInFrame"
   | "toggleWrap"
   | "toggleShapeSwitch"
-  | "togglePolygon";
+  | "togglePolygon"
+  | "convertFreeDrawToLine"
+  | "convertShapeToLine"
+  | "joinLines"
+  | "closeLine"
+  | "reduceLinePoints"
+  | "createRingSegment"
+  | "splitLine"
+  | "unionShapes"
+  | "intersectionShapes"
+  | "differenceShapes"
+  | "xorShapes";
 
 export type PanelComponentProps = {
   elements: readonly ExcalidrawElement[];

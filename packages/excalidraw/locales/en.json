@@ -1,4 +1,30 @@
 {
+  "ringSegment": {
+    "description": "Replace the selected ellipse with a circular ring segment centered at the same position. The preview shows geometry; the result keeps the original fill style.",
+    "outerRadius": "Outer radius",
+    "innerRadius": "Inner radius",
+    "startAngle": "Start angle (°)",
+    "endAngle": "End angle (°)",
+    "preview": "Ring segment preview",
+    "anglesHint": "0° points right. Positive angles go clockwise. Use an inner radius of 0 for a sector.",
+    "invalid": "Use radii 0 ≤ inner < outer ≤ 10000 and an angle span from 0.1° to less than 360°. Angles must be between −3600° and 3600°. Full rings are not supported.",
+    "create": "Replace ellipse"
+  },
+  "shapeUnion": {
+    "invalid": "Union needs simple closed outlines without crossings or retraced edges. The original shapes were kept.",
+    "holes": "This union would create a hole. Holes with editable outlines are not supported yet; the original shapes were kept.",
+    "tooComplex": "These outlines are too complex for union. Reduce their point counts or select fewer shapes. The original shapes were kept.",
+    "empty": "The union has no area. The original shapes were kept.",
+    "failed": "The outlines could not be combined. The original shapes were kept."
+  },
+  "shapeBoolean": {
+    "invalid": "The operation needs simple closed outlines without crossings or retraced edges. The original shapes were kept.",
+    "holes": "This operation would create a hole. Holes with editable outlines are not supported yet; the original shapes were kept.",
+    "tooComplex": "These outlines are too complex. Reduce their point counts or select fewer shapes. The original shapes were kept.",
+    "empty": "The operation has no area. The original shapes were kept.",
+    "failed": "The operation could not be completed. The original shapes were kept.",
+    "emptyResult": "The result has no area. The selected shapes were removed. Undo to restore them."
+  },
   "labels": {
     "signUp": "Sign up",
     "signIn": "Sign in",
@@ -158,6 +184,28 @@
       "hint": "Type or paste your link here",
       "goToElement": "Go to target element"
     },
+    "createRingSegment": "Create ring segment",
+    "createRingSegmentDescription": "Replace the selected ellipse with an editable circular ring segment",
+    "convertShapeToLine": "Convert to editable outline",
+    "convertShapeToLineDescription": "Replace the shape with a closed line of editable points; curves are approximated. Unavailable for shapes with bound text or arrows.",
+    "convertFreeDrawToLine": "Convert to editable line",
+    "convertFreeDrawToLineDescription": "Simplify the pen stroke into editable points with a uniform line width",
+    "joinLines": "Join lines",
+    "joinLinesDescription": "Connect the nearest endpoints using the topmost line’s style; curves become editable line segments",
+    "intersectionShapes": "Intersection of shapes",
+    "intersectionShapesDescription": "Keep only the area shared by all selected shapes, using the topmost style and layer. Results with holes are refused. An empty result removes the originals; undo restores them.",
+    "differenceShapes": "Subtract from bottom shape",
+    "differenceShapesDescription": "Subtract every other selected shape from the bottommost shape. Keep the base’s style, groups and layer. Results with holes are refused. An empty result removes the originals; undo restores them.",
+    "xorShapes": "Exclude overlap (XOR)",
+    "xorShapesDescription": "Keep areas covered by an odd number of selected shapes. With two shapes, the shared area disappears. Use the topmost style and layer. Results with holes are refused. An empty result removes the originals; undo restores them.",
+    "unionShapes": "Union shapes",
+    "unionShapesDescription": "Combine rectangles, ellipses, diamonds and closed straight outlines. Use the topmost shape’s style. Disconnected areas remain separate; results with holes are not supported.",
+    "splitLine": "Split at selected points",
+    "splitLineDescription": "Split the straight line at selected vertices. Closed outlines lose their fill. A single cut on an outline creates separate endpoints at the same position; drag an endpoint to open a gap.",
+    "reduceLinePoints": "Reduce points",
+    "reduceLinePointsDescription": "Remove about a quarter of the points from a straight line or outline. Repeat to simplify further; undo to restore detail. The shape may change.",
+    "closeLine": "Close outline",
+    "closeLineDescription": "Connect the last point to the first, then choose a background color to fill the outline",
     "lineEditor": {
       "edit": "Edit line",
       "editArrow": "Edit arrow"

@@ -209,6 +209,17 @@ export const SelectedShapeActions = ({
             {predicates.link && renderAction("hyperlink")}
             {predicates.cropEditor && renderAction("cropEditor")}
             {predicates.lineEditor && renderAction("toggleLinearEditor")}
+            {renderAction("convertFreeDrawToLine")}
+            {renderAction("convertShapeToLine")}
+            {renderAction("createRingSegment")}
+            {renderAction("joinLines")}
+            {renderAction("closeLine")}
+            {renderAction("reduceLinePoints")}
+            {renderAction("splitLine")}
+            {renderAction("unionShapes")}
+            {renderAction("intersectionShapes")}
+            {renderAction("differenceShapes")}
+            {renderAction("xorShapes")}
           </div>
         </fieldset>
       )}
@@ -668,6 +679,17 @@ export const CompactShapeActions = ({
         container={container}
         app={app}
       />
+      {renderAction("convertFreeDrawToLine")}
+      {renderAction("convertShapeToLine")}
+      {renderAction("createRingSegment")}
+      {renderAction("joinLines")}
+      {renderAction("closeLine")}
+      {renderAction("reduceLinePoints")}
+      {renderAction("splitLine")}
+      {renderAction("unionShapes")}
+      {renderAction("intersectionShapes")}
+      {renderAction("differenceShapes")}
+      {renderAction("xorShapes")}
       {/* Linear Editor */}
       {predicates.lineEditor && (
         <div className="compact-action-item">
@@ -818,6 +840,17 @@ export const MobileShapeActions = ({
           container={container}
           app={app}
         />
+        {renderAction("convertFreeDrawToLine")}
+        {renderAction("convertShapeToLine")}
+        {renderAction("createRingSegment")}
+        {renderAction("joinLines")}
+        {renderAction("closeLine")}
+        {renderAction("reduceLinePoints")}
+        {renderAction("splitLine")}
+        {renderAction("unionShapes")}
+        {renderAction("intersectionShapes")}
+        {renderAction("differenceShapes")}
+        {renderAction("xorShapes")}
         {/* Linear Editor */}
         <LinearEditorAction
           renderAction={renderAction}

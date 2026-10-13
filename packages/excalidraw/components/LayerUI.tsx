@@ -1,3 +1,5 @@
+import { canCreateRingSegment } from "@excalidraw/element/ringSegment";
+
 import clsx from "clsx";
 import React from "react";
 
@@ -18,6 +20,8 @@ import { ShapeCache } from "@excalidraw/element";
 
 import type { NonDeletedExcalidrawElement } from "@excalidraw/element/types";
 
+import { actionCreateRingSegment } from "../actions/actionCreateRingSegment";
+
 import { actionToggleStats } from "../actions";
 import { trackEvent } from "../analytics";
 import { TunnelsContext, useInitializeTunnels } from "../context/tunnels";
@@ -31,6 +35,8 @@ import {
   resolveColorTarget,
   type ColorDefaultKey,
 } from "../actions/colorTargets";
+
+import { RingSegmentDialog } from "./RingSegmentDialog";
 
 import { SelectedShapeActions, CompactShapeActions } from "./Actions";
 import { LoadingMessage } from "./LoadingMessage";
@@ -581,6 +587,27 @@ const LayerUI = ({
           }}
         />
       )}
+      {defaultUIEnabled &&
+        appState.openDialog?.name === "ringSegment" &&
+        (() => {
+          const source = app.scene
+            .getNonDeletedElementsMap()
+            .get(appState.openDialog.sourceElementId);
+          return source && canCreateRingSegment(source) ? (
+            <RingSegmentDialog
+              key={source.id}
+              source={source}
+              onClose={() => setAppState({ openDialog: null })}
+              onSubmit={(options) =>
+                actionManager.executeAction(
+                  actionCreateRingSegment,
+                  "ui",
+                  options,
+                )
+              }
+            />
+          ) : null;
+        })()}
       <ActiveConfirmDialog />
       {defaultUIEnabled && appState.openDialog?.name === "elementLinkSelector" && (
         <ElementLinkDialog
