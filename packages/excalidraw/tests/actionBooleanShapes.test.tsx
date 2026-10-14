@@ -171,11 +171,20 @@ describe("intersection, difference and XOR geometry", () => {
   });
 
   it.each(["difference", "xor"] as const)(
-    "refuses a nested $operation result with a hole",
+    "creates a nested $operation result with grouped hole contours",
     (operation) => {
-      expect(
-        booleanShapes([rect(0, 0, 200, 200), rect(50, 50, 50, 50)], operation),
-      ).toEqual({ ok: false, reason: "holes" });
+      const result = booleanShapes(
+        [rect(0, 0, 200, 200), rect(50, 50, 50, 50)],
+        operation,
+      );
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.elements).toHaveLength(3);
+        expect(result.elements[0].strokeColor).toBe("transparent");
+        expect(
+          new Set(result.elements.map(({ groupIds }) => groupIds[0])).size,
+        ).toBe(1);
+      }
     },
   );
 
@@ -397,17 +406,18 @@ describe("boolean shape actions", () => {
   );
 
   it.each([actionDifferenceShapes, actionXorShapes])(
-    "keeps originals and selection when holes are refused by $name",
+    "replaces originals with grouped native hole parts for $name",
     (action) => {
       const sources = [rect(0, 0, 200, 200), rect(50, 50, 50, 50)];
       API.setElements(sources);
       API.setSelectedElements(sources);
       API.executeAction(action);
-      expect(h.elements).toEqual(sources);
+      const live = h.elements.filter((element) => !element.isDeleted);
+      expect(live).toHaveLength(3);
       expect(h.state.selectedElementIds).toEqual(
-        Object.fromEntries(sources.map(({ id }) => [id, true])),
+        Object.fromEntries(live.map(({ id }) => [id, true])),
       );
-      expect(h.state.toast?.message).toContain("would create a hole");
+      expect(h.state.toast).toBeNull();
     },
   );
 });

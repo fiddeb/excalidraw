@@ -86,8 +86,13 @@ export const RingSegmentDialog = ({
             2 * previewRadius
           }`}
         >
-          <polygon
-            points={points.map(([x, y]) => `${x},${y}`).join(" ")}
+          <path
+            d={
+              points.length
+                ? `M${points.map(([x, y]) => `${x},${y}`).join(" L")} Z`
+                : ""
+            }
+            fillRule="evenodd"
             fill={
               source.backgroundColor === "transparent"
                 ? "none"

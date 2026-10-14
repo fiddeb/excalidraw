@@ -2,7 +2,7 @@ import { arrayToMap } from "@excalidraw/common";
 import { CaptureUpdateAction } from "@excalidraw/element";
 import {
   canCreateRingSegment,
-  ellipseToRingSegment,
+  ellipseToRingSegmentElements,
   isValidRingSegment,
 } from "@excalidraw/element/ringSegment";
 import { LinearElementEditor } from "@excalidraw/element/linearElementEditor";
@@ -51,10 +51,10 @@ export const actionCreateRingSegment = register<RingSegmentOptions | null>({
     if (!isValidRingSegment(options)) {
       return false;
     }
-    const line = ellipseToRingSegment(source, options);
+    const lines = ellipseToRingSegmentElements(source, options);
     const nextElements = elements.flatMap((element) =>
       element.id === source.id
-        ? [newElementWith(element, { isDeleted: true }), line]
+        ? [newElementWith(element, { isDeleted: true }), ...lines]
         : [element],
     );
     return {
@@ -62,13 +62,14 @@ export const actionCreateRingSegment = register<RingSegmentOptions | null>({
       appState: {
         ...appState,
         openDialog: null,
-        selectedElementIds: { [line.id]: true },
-        selectedGroupIds: {},
-        selectedLinearElement: new LinearElementEditor(
-          line,
-          arrayToMap(nextElements),
-          true,
+        selectedElementIds: Object.fromEntries(
+          lines.map(({ id }) => [id, true]),
         ),
+        selectedGroupIds: {},
+        selectedLinearElement:
+          lines.length === 1
+            ? new LinearElementEditor(lines[0], arrayToMap(nextElements), true)
+            : null,
       },
       captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };

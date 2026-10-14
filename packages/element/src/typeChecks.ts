@@ -181,6 +181,18 @@ export const isBindingElementType = (
   return elementType === "arrow";
 };
 
+/** Only deliberately closed contours can receive arrows; ordinary lines cannot. */
+export const isBindableContour = <T extends ExcalidrawElement>(
+  element: T | null | undefined,
+): element is T & ExcalidrawLineElement =>
+  !!element &&
+  isLineElement(element) &&
+  element.points.length >= 3 &&
+  element.width > 0 &&
+  element.height > 0 &&
+  (element.polygon ||
+    pointsEqual(element.points[0], element.points[element.points.length - 1]));
+
 export const isBindableElement = <T extends ExcalidrawElement>(
   element: T | null | undefined,
   includeLocked = true,
@@ -188,7 +200,8 @@ export const isBindableElement = <T extends ExcalidrawElement>(
   return (
     element != null &&
     (!element.locked || includeLocked === true) &&
-    (element.type === "rectangle" ||
+    (isBindableContour(element) ||
+      element.type === "rectangle" ||
       element.type === "stickynote" ||
       element.type === "diamond" ||
       element.type === "ellipse" ||

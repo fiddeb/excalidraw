@@ -1,0 +1,39 @@
+.excalidraw .local-ai-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  p {
+    margin: 0;
+  }
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+    padding: 0.6rem;
+    border: 1px solid var(--default-border-color);
+    border-radius: 0.5rem;
+    background: var(--island-bg-color);
+    color: var(--text-primary-color);
+  }
+  button,
+  summary {
+    cursor: pointer;
+  }
+  button:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+  textarea {
+    resize: vertical;
+  }
+  [role="alert"] {
+    color: var(--color-danger);
+  }
+}

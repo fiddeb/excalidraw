@@ -42,6 +42,7 @@ import {
 import {
   hasBoundTextElement,
   isBindableElement,
+  isBindableContour,
   isBoundToContainer,
   isFrameLikeElement,
   isFreeDrawElement,
@@ -60,6 +61,11 @@ import {
   getBoundTextElement,
   getTextElementWithAccuratePosition,
 } from "./textElement";
+
+import {
+  getContourBindingSegments,
+  isPointInsideContour,
+} from "./contourBinding";
 
 import { distanceToElement } from "./distance";
 
@@ -324,7 +330,11 @@ const bindableElementBorderDistanceIfClose = (
     return -Infinity;
   }
 
-  const isInside = isPointInElement(point, element, elementsMap);
+  // Contours bind at their actual edge, including hole edges, not anywhere
+  // inside their bounding box or the interior of a hole outline.
+  const isInside =
+    !isBindableContour(element) &&
+    isPointInElement(point, element, elementsMap);
   // frames are only bindable from the outside, so arrows ending inside
   // a frame can bind to its children (or stay unbound)
   if (isInside && isFrameLikeElement(element)) {
@@ -415,6 +425,13 @@ const getBindingCandidates = (
         break;
       }
     }
+    if (
+      isBindableContour(element) &&
+      isOpaqueForBinding(element) &&
+      isPointInsideContour(element, elementsMap, point)
+    ) {
+      break;
+    }
   }
 
   return candidates;
@@ -499,6 +516,16 @@ export const intersectElementWithLineSegment = (
   offset: number = 0,
   onlyFirst = false,
 ): GlobalPoint[] => {
+  if (isBindableContour(element)) {
+    const intersections = getContourBindingSegments(
+      element,
+      elementsMap,
+    ).flatMap((segment) => {
+      const hit = lineSegmentIntersectionPoints(segment, line);
+      return hit ? [hit] : [];
+    });
+    return onlyFirst ? intersections.slice(0, 1) : intersections;
+  }
   // First check if the line intersects the element's axis-aligned bounding box
   // as it is much faster than checking intersection against the element's shape
   const intersectorBounds = [

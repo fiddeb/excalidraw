@@ -111,6 +111,8 @@ export const actionClearCanvas = register({
         gridStep: appState.gridStep,
         gridModeEnabled: appState.gridModeEnabled,
         stats: appState.stats,
+        colorPalettes: appState.colorPalettes,
+        activeColorPaletteId: appState.activeColorPaletteId,
         colorTopPicks: appState.colorTopPicks,
         fontTopPicks: appState.fontTopPicks,
         activeTool:

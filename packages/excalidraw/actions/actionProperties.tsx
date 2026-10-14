@@ -1,3 +1,5 @@
+import { getCompoundPolygonGroups } from "@excalidraw/element/polygonContours";
+
 import { pointFrom } from "@excalidraw/math";
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -361,7 +363,7 @@ export const actionChangeStrokeColor = register<
   name: "changeStrokeColor",
   label: "labels.stroke",
   trackEvent: false,
-  perform: (elements, appState, value) => {
+  perform: (elements, appState, value, app) => {
     const { color, ...appStateUpdates } = value ?? {};
     if (color === undefined) {
       return {
@@ -373,6 +375,9 @@ export const actionChangeStrokeColor = register<
     // render-time closure of the memoized picker (see `resolveColorTarget`)
     const target = resolveColorTarget(appState, elements, "strokeColor");
     const elementsMap = arrayToMap(elements);
+    const compoundGroups = getCompoundPolygonGroups(
+      app.scene.getSelectedElements(appState),
+    );
 
     return {
       // a note and its label share one ink: coloring the label while editing
@@ -382,7 +387,7 @@ export const actionChangeStrokeColor = register<
           elements,
           appState,
           (el) =>
-            hasStrokeColor(el.type)
+            hasStrokeColor(el.type) && !compoundGroups.has(el.id)
               ? newElementWith(
                   el,
                   getColorUpdate(el, "strokeColor", color, elementsMap),
@@ -402,6 +407,9 @@ export const actionChangeStrokeColor = register<
   },
   PanelComponent: ({ elements, appState, updateData, app }) => {
     const { stylesPanelMode } = getStylesPanelInfo(app);
+    const compoundGroups = getCompoundPolygonGroups(
+      app.scene.getSelectedElements(appState),
+    );
     const target = resolveColorTarget(appState, elements, "strokeColor");
     // a note has no stroke: its "stroke" is the ink of its text and footer
     const label =
@@ -421,7 +429,7 @@ export const actionChangeStrokeColor = register<
             elements,
             app,
             (element) => element.strokeColor,
-            true,
+            (element) => !compoundGroups.has(element.id),
             (hasSelection) => (!hasSelection ? target.currentValue : null),
           )}
           onChange={(color) => updateData({ color })}
@@ -454,6 +462,12 @@ export const actionChangeBackgroundColor = register<
     let nextElements;
 
     const selectedElements = app.scene.getSelectedElements(appState);
+    const compoundGroups = getCompoundPolygonGroups(selectedElements);
+    const boundaryIds = new Set(
+      [...compoundGroups.values()].flatMap(({ boundaries }) =>
+        boundaries.map(({ id }) => id),
+      ),
+    );
     const shouldEnablePolygon =
       !isTransparent(color) &&
       // `every` is vacuously true with nothing selected (editing text)
@@ -465,7 +479,11 @@ export const actionChangeBackgroundColor = register<
     if (shouldEnablePolygon) {
       const selectedElementsMap = arrayToMap(selectedElements);
       nextElements = elements.map((el) => {
-        if (selectedElementsMap.has(el.id) && isLineElement(el)) {
+        if (
+          selectedElementsMap.has(el.id) &&
+          isLineElement(el) &&
+          !boundaryIds.has(el.id)
+        ) {
           return newElementWith(el, {
             backgroundColor: color,
             ...toggleLinePolygonState(el, true),
@@ -476,7 +494,8 @@ export const actionChangeBackgroundColor = register<
     } else {
       nextElements = changeProperty(elements, appState, (el) =>
         // a note's label passes the pick on to the note (below)
-        getColorTargetElement(el, "backgroundColor", elementsMap) === el
+        getColorTargetElement(el, "backgroundColor", elementsMap) === el &&
+        !boundaryIds.has(el.id)
           ? newElementWith(
               el,
               getColorUpdate(el, "backgroundColor", color, elementsMap),
@@ -518,6 +537,14 @@ export const actionChangeBackgroundColor = register<
     const target = resolveColorTarget(appState, elements, "backgroundColor");
     // while editing a note's label the picker shows and sets the note's fill
     const elementsMap = app.scene.getNonDeletedElementsMap();
+    const compoundGroups = getCompoundPolygonGroups(
+      app.scene.getSelectedElements(appState),
+    );
+    const boundaryIds = new Set(
+      [...compoundGroups.values()].flatMap(({ boundaries }) =>
+        boundaries.map(({ id }) => id),
+      ),
+    );
 
     return (
       <>
@@ -537,7 +564,7 @@ export const actionChangeBackgroundColor = register<
             (element) =>
               getColorTargetElement(element, "backgroundColor", elementsMap)
                 .backgroundColor,
-            true,
+            (element) => !boundaryIds.has(element.id),
             (hasSelection) => (!hasSelection ? target.currentValue : null),
           )}
           onChange={(color) => updateData({ color })}
@@ -1749,10 +1776,19 @@ export const actionChangeRoundness = register<"sharp" | "round">({
   name: "changeRoundness",
   label: "Change edge roundness",
   trackEvent: false,
-  perform: (elements, appState, value) => {
+  perform: (elements, appState, value, app) => {
+    const groups = getCompoundPolygonGroups(
+      app.scene.getSelectedElements(appState),
+    );
+    const protectedIds = new Set([
+      ...groups.keys(),
+      ...[...groups.values()].flatMap(({ boundaries }) =>
+        boundaries.map(({ id }) => id),
+      ),
+    ]);
     return {
       elements: changeProperty(elements, appState, (el) => {
-        if (isElbowArrow(el)) {
+        if (isElbowArrow(el) || protectedIds.has(el.id)) {
           return el;
         }
 
@@ -1777,6 +1813,11 @@ export const actionChangeRoundness = register<"sharp" | "round">({
     };
   },
   PanelComponent: ({ elements, appState, updateData, app, renderAction }) => {
+    if (
+      getCompoundPolygonGroups(app.scene.getSelectedElements(appState)).size
+    ) {
+      return null;
+    }
     const targetElements = getTargetElements(
       getNonDeletedElements(elements),
       appState,

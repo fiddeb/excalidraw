@@ -1,3 +1,5 @@
+import { SHOW_UPSTREAM_PROMOTIONS } from "@excalidraw/common";
+
 import { loginIcon } from "@excalidraw/excalidraw/components/icons";
 import { POINTER_EVENTS } from "@excalidraw/common";
 import { useI18n } from "@excalidraw/excalidraw/i18n";
@@ -13,7 +15,7 @@ export const AppWelcomeScreen: React.FC<{
   const { t } = useI18n();
   let headingContent;
 
-  if (isExcalidrawPlusSignedUser) {
+  if (SHOW_UPSTREAM_PROMOTIONS && isExcalidrawPlusSignedUser) {
     headingContent = t("welcomeScreen.app.center_heading_plus")
       .split(/(Excalidraw\+)/)
       .map((bit, idx) => {
@@ -64,7 +66,7 @@ export const AppWelcomeScreen: React.FC<{
               onSelect={() => props.onCollabDialogOpen()}
             />
           )}
-          {!isExcalidrawPlusSignedUser && (
+          {SHOW_UPSTREAM_PROMOTIONS && !isExcalidrawPlusSignedUser && (
             <WelcomeScreen.Center.MenuItemLink
               href={`${
                 import.meta.env.VITE_APP_PLUS_LP

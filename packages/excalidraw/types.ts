@@ -56,6 +56,8 @@ import type {
 } from "@excalidraw/element";
 import type { GlobalPoint } from "@excalidraw/math";
 
+import type { SavedColorPalette } from "./colorPalettes";
+
 import type { Action } from "./actions/types";
 import type { Spreadsheet } from "./charts";
 import type { ClipboardData } from "./clipboard";
@@ -491,6 +493,8 @@ export interface AppState {
     | null
     | { name: "imageExport" | "help" | "jsonExport" }
     | { name: "ttd"; tab: "text-to-diagram" | "mermaid" }
+    | { name: "editableSvg" }
+    | { name: "drawioExport" }
     | { name: "commandPalette" }
     | { name: "settings" }
     | { name: "elementLinkSelector"; sourceElementId: ExcalidrawElement["id"] }
@@ -571,6 +575,9 @@ export interface AppState {
   // a drag operation (like pointer position vs bindable element) but needed
   // globally for calculating the binding strategy
   bindMode: BindMode;
+  /** Named palettes shared by color pickers; persisted only in this browser. */
+  colorPalettes: SavedColorPalette[];
+  activeColorPaletteId: string | null;
   /** user-customized color-picker top picks (pinned via drag & drop from the
    * color picker popup). `null` means no customization (defaults, or
    * host-supplied `topPicks`, are used). Kept per picker. */

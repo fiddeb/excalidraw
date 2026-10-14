@@ -41,7 +41,13 @@ import { generateLinearCollisionShape } from "./shape";
 
 import { hitElementItself, isPointInElement } from "./collision";
 import { LinearElementEditor } from "./linearElementEditor";
-import { isElbowArrow, isRectangularElement } from "./typeChecks";
+import { getNearestContourBindingPoint } from "./contourBinding";
+
+import {
+  isElbowArrow,
+  isRectangularElement,
+  isBindableContour,
+} from "./typeChecks";
 import { getBindingGap, maxBindingDistance_simple } from "./binding";
 
 import {
@@ -772,6 +778,9 @@ export const getElbowArrowSnapMidPoint = (
   elementsMap: ElementsMap,
   zoom: AppState["zoom"],
 ) => {
+  if (isBindableContour(element)) {
+    return undefined;
+  }
   const TOLERANCE = 0.05;
   const maxDistance = maxBindingDistance_simple(zoom) + element.strokeWidth / 2;
 
@@ -817,6 +826,10 @@ export const projectFixedPointOntoDiagonal = (
   isMidpointSnappingEnabled: boolean = true,
 ): GlobalPoint | null => {
   invariant(arrow.points.length >= 2, "Arrow must have at least two points");
+  if (isBindableContour(element)) {
+    return getNearestContourBindingPoint(element, elementsMap, point);
+  }
+
   if (isMidpointSnappingEnabled) {
     const sideMidPoint = getSnapOutlineMidPoint(
       point,

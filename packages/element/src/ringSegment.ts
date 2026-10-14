@@ -5,7 +5,13 @@ import {
 } from "@excalidraw/common";
 import { pointFrom, pointRotateRads } from "@excalidraw/math";
 
-import type { LocalPoint, Radians } from "@excalidraw/math";
+import type { LocalPoint, Radians, GlobalPoint } from "@excalidraw/math";
+
+import {
+  createPolygonElements,
+  splitKeyholeContours,
+  contoursToEvenOddPolygons,
+} from "./polygonContours";
 
 import { newLinearElement } from "./newElement";
 
@@ -28,7 +34,7 @@ export const isValidRingSegment = (options: RingSegmentOptions) => {
     innerRadius >= 0 &&
     innerRadius < outerRadius &&
     sweep >= 0.1 &&
-    sweep < 360 &&
+    sweep <= 360 &&
     Math.abs(startAngle) <= 3600 &&
     Math.abs(endAngle) <= 3600
   );
@@ -44,7 +50,8 @@ export const canCreateRingSegment = <T extends ExcalidrawElement>(
   element.height > 0 &&
   !element.boundElements?.length;
 
-/** A single simple contour, without holes or version-specific metadata.
+/** Partial segments are simple contours; full rings use doubled keyhole
+ * bridges for the fill and separate visible contours at the element layer.
  * Angles are degrees, clockwise from the right in canvas coordinates.
  */
 export const getRingSegmentPoints = (
@@ -69,10 +76,18 @@ export const getRingSegmentPoints = (
         radius * Math.sin(angle),
       );
     });
-  const points = [
-    ...arc(outerRadius, false),
-    ...(innerRadius ? arc(innerRadius, true) : [pointFrom<LocalPoint>(0, 0)]),
-  ];
+  const outer = arc(outerRadius, false);
+  const inner = innerRadius
+    ? arc(innerRadius, true)
+    : [pointFrom<LocalPoint>(0, 0)];
+  const full = Math.abs(endAngle - startAngle) === 360;
+  if (full) {
+    outer[outer.length - 1] = outer[0];
+    if (innerRadius) {
+      inner[inner.length - 1] = inner[0];
+    }
+  }
+  const points = full && !innerRadius ? outer : [...outer, ...inner];
   points.push(points[0]);
   return points;
 };
@@ -105,5 +120,27 @@ export const ellipseToRingSegment = (
     versionNonce: 0,
     created: getUpdatedTimestamp(),
   });
-  return { ...line, id: randomId() };
+  return { ...line, id: randomId(), type: "line" as const, polygon: true };
+};
+
+/** Full donuts use grouped fill/boundary lines; partial segments stay one line. */
+export const ellipseToRingSegmentElements = (
+  source: ExcalidrawEllipseElement,
+  options: RingSegmentOptions,
+) => {
+  if (
+    Math.abs(options.endAngle - options.startAngle) !== 360 ||
+    !options.innerRadius
+  ) {
+    return [ellipseToRingSegment(source, options)];
+  }
+  const line = ellipseToRingSegment(source, options);
+  const global = line.points.map(([x, y]) =>
+    pointFrom<GlobalPoint>(line.x + x, line.y + y),
+  );
+  const contours = splitKeyholeContours(global);
+  if (!contours) {
+    throw new Error("Invalid donut contours");
+  }
+  return createPolygonElements(source, contoursToEvenOddPolygons(contours));
 };

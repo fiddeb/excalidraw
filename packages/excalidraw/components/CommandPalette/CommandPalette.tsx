@@ -342,6 +342,8 @@ function CommandPaletteInner({
         actionManager.actions.closeLine,
         actionManager.actions.reduceLinePoints,
         actionManager.actions.splitLine,
+        actionManager.actions.cutAtIntersections,
+        actionManager.actions.importEditableSvg,
         actionManager.actions.unionShapes,
         actionManager.actions.intersectionShapes,
         actionManager.actions.differenceShapes,
@@ -389,6 +391,7 @@ function CommandPaletteInner({
       ].map((action) => actionToCommand(action, DEFAULT_CATEGORIES.editor));
 
       const exportCommands: CommandPaletteItem[] = [
+        actionManager.actions.exportDrawio,
         actionManager.actions.saveToActiveFile,
         actionManager.actions.saveFileToDisk,
         actionManager.actions.copyAsPng,

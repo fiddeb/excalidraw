@@ -1,3 +1,5 @@
+import { SHOW_UPSTREAM_PROMOTIONS } from "@excalidraw/common";
+
 import Trans from "@excalidraw/excalidraw/components/Trans";
 import { t } from "@excalidraw/excalidraw/i18n";
 import * as Sentry from "@sentry/browser";
@@ -119,14 +121,18 @@ export class TopErrorBoundary extends React.Component<
                 eventId: this.state.sentryEventId,
               })}
             </div>
-            <div className="ErrorSplash-paragraph">
-              <Trans
-                i18nKey="errorSplash.openIssueMessage"
-                button={(el) => (
-                  <button onClick={() => this.createGithubIssue()}>{el}</button>
-                )}
-              />
-            </div>
+            {SHOW_UPSTREAM_PROMOTIONS && (
+              <div className="ErrorSplash-paragraph">
+                <Trans
+                  i18nKey="errorSplash.openIssueMessage"
+                  button={(el) => (
+                    <button onClick={() => this.createGithubIssue()}>
+                      {el}
+                    </button>
+                  )}
+                />
+              </div>
+            )}
             <div className="ErrorSplash-paragraph">
               <div className="ErrorSplash-details">
                 <label>{t("errorSplash.sceneContent")}</label>

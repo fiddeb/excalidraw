@@ -71,7 +71,7 @@ describe("ring segment geometry", () => {
     { innerRadius: -1 },
     { outerRadius: 0 },
     { outerRadius: 10001 },
-    { endAngle: 360 },
+    { endAngle: 360.1 },
     { endAngle: 0 },
     { endAngle: NaN },
     { startAngle: Infinity },
@@ -166,8 +166,8 @@ describe("ring segment dialog and action", () => {
     });
     expect(
       screen.getByRole("button", { name: "Replace ellipse" }),
-    ).toBeDisabled();
-    expect(screen.getByRole("alert")).toBeTruthy();
+    ).not.toBeDisabled();
+    expect(screen.queryByRole("alert")).toBeNull();
     fireEvent.change(screen.getByLabelText("End angle (°)"), {
       target: { value: "270" },
     });

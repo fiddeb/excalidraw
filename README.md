@@ -122,3 +122,11 @@ If you like the project, you can become a sponsor at [Open Collective](https://o
 Last but not least, we're thankful to these companies for offering their services for free:
 
 [![Vercel](./.github/assets/vercel.svg)](https://vercel.com) [![Sentry](./.github/assets/sentry.svg)](https://sentry.io) [![Crowdin](./.github/assets/crowdin.svg)](https://crowdin.com)
+
+## Fork configuration
+
+This fork supports a local Pi server for **Text to diagram** with ChatGPT sign-in. See [local AI setup](ai-server/README.md) for installation and connection instructions.
+
+This fork hides upstream promotions and community links by default, including Excalidraw+, the 14-day trial, sign-up links, Plus exports, social links, and sidebar promotions. Editing tools, shortcuts, local exports and collaboration remain available.
+
+To restore the upstream links, set `VITE_APP_SHOW_UPSTREAM_PROMOTIONS=true` in `.env.local` and restart the development server. For production, set the variable before building the app. Set it to `false` to hide them again.

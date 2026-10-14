@@ -2,24 +2,22 @@ import polygonClipping from "polygon-clipping";
 import { orient2d } from "robust-predicates";
 
 import {
-  getSizeFromPoints,
-  getUpdatedTimestamp,
-  randomId,
-} from "@excalidraw/common";
-import {
   pointFrom,
   pointRotateRads,
   polygonSignedArea,
 } from "@excalidraw/math";
 
-import type { GlobalPoint, LocalPoint, Radians } from "@excalidraw/math";
+import type { GlobalPoint, LocalPoint } from "@excalidraw/math";
 
 import { getBoundsFromPoints } from "./bounds";
-import { newLinearElement } from "./newElement";
+import {
+  createPolygonElements,
+  splitKeyholeContours,
+  contoursToEvenOddPolygons,
+  getCompoundPolygonGroups,
+} from "./polygonContours";
 import { canConvertShapeToLine, getShapeOutlinePoints } from "./shapeToLine";
 import { isLineElement, isValidPolygon } from "./typeChecks";
-
-import type { Polygon } from "polygon-clipping";
 
 import type {
   ExcalidrawElement,
@@ -48,10 +46,40 @@ export const isBooleanShape = <T extends ExcalidrawElement>(
       !element.startArrowhead &&
       !element.endArrowhead));
 
-export const canBooleanShapes = (elements: readonly ExcalidrawElement[]) =>
-  elements.length >= 2 &&
-  elements.every(isBooleanShape) &&
-  elements.every((element) => element.frameId === elements[0].frameId);
+const getBooleanOperands = (elements: readonly ExcalidrawElement[]) => {
+  const groups = getCompoundPolygonGroups(elements);
+  if ([...groups.values()].some(({ stale }) => stale)) {
+    return null;
+  }
+  const boundaryIds = new Set(
+    [...groups.values()].flatMap(({ boundaries }) =>
+      boundaries.map(({ id }) => id),
+    ),
+  );
+  return elements
+    .filter(({ id }) => !boundaryIds.has(id))
+    .map((element) => {
+      const group = groups.get(element.id);
+      return group
+        ? { ...element, strokeColor: group.boundaries[0].strokeColor }
+        : element;
+    });
+};
+
+export const canBooleanShapes = (elements: readonly ExcalidrawElement[]) => {
+  if (
+    elements.length < 2 ||
+    elements.some(
+      (element) =>
+        element.locked || element.isDeleted || element.boundElements?.length,
+    ) ||
+    !elements.every((element) => element.frameId === elements[0].frameId)
+  ) {
+    return false;
+  }
+  const operands = getBooleanOperands(elements);
+  return !!operands && operands.length >= 2 && operands.every(isBooleanShape);
+};
 
 // Retain the existing union API for callers. All four operations share inputs.
 export const canUnionShapes = canBooleanShapes;
@@ -168,7 +196,7 @@ export type ShapeBooleanResult =
   | { ok: true; elements: NonDeleted<ExcalidrawLineElement>[] }
   | {
       ok: false;
-      reason: "invalid" | "holes" | "tooComplex" | "empty" | "failed";
+      reason: "invalid" | "tooComplex" | "empty" | "failed";
     };
 
 /** Inputs are in scene/layer order. Difference subtracts every later input
@@ -179,7 +207,12 @@ export const booleanShapes = (
   elements: readonly ExcalidrawElement[],
   operation: BooleanShapeOperation,
 ): ShapeBooleanResult => {
-  if (!canBooleanShapes(elements) || !elements.every(isBooleanShape)) {
+  const sources = getBooleanOperands(elements);
+  if (
+    !sources ||
+    !canBooleanShapes(elements) ||
+    !sources.every(isBooleanShape)
+  ) {
     return { ok: false, reason: "invalid" };
   }
   // Preflight before sampling very large ellipses or quadratic validation.
@@ -193,16 +226,24 @@ export const booleanShapes = (
   ) {
     return { ok: false, reason: "tooComplex" };
   }
-  const rings = elements.map(getBooleanShapePoints);
+  const rings = sources.map(getBooleanShapePoints);
   if (rings.reduce((count, ring) => count + ring.length, 0) > MAX_POINTS) {
     return { ok: false, reason: "tooComplex" };
   }
-  if (!rings.every(isSimpleBooleanRing)) {
+  const contours = rings.map((ring) => splitKeyholeContours(ring));
+  if (contours.some((entry) => !entry || !entry.every(isSimpleBooleanRing))) {
     return { ok: false, reason: "invalid" };
   }
-  const polygons: Polygon[] = rings.map((ring) => [
-    ring.map(([x, y]) => [x, y]),
-  ]);
+  let operands;
+  try {
+    operands = contours.map((entry, i) => ({
+      polygon: contoursToEvenOddPolygons(entry!),
+      source: sources[i],
+    }));
+  } catch {
+    return { ok: false, reason: "failed" };
+  }
+  const polygons = operands.map(({ polygon }) => polygon);
   let result: ReturnType<typeof polygonClipping.union>;
   try {
     result = polygonClipping[operation](polygons[0], ...polygons.slice(1));
@@ -212,16 +253,19 @@ export const booleanShapes = (
   if (!result.length && operation === "union") {
     return { ok: false, reason: "empty" };
   }
-  if (result.some((polygon) => polygon.length > 1)) {
-    return { ok: false, reason: "holes" };
-  }
   if (
-    result.reduce((count, polygon) => count + polygon[0].length, 0) > MAX_POINTS
+    result.reduce(
+      (count, polygon) =>
+        count + polygon.reduce((sum, ring) => sum + ring.length * 3, 0),
+      0,
+    ) > MAX_POINTS
   ) {
     return { ok: false, reason: "tooComplex" };
   }
   const source =
-    operation === "difference" ? elements[0] : elements[elements.length - 1];
+    operation === "difference"
+      ? operands[0].source
+      : operands[operands.length - 1].source;
   // Groups are innermost first: preserve only the shared outer hierarchy.
   const groupIds: string[] = [];
   for (let i = source.groupIds.length - 1; i >= 0; i--) {
@@ -237,31 +281,13 @@ export const booleanShapes = (
     }
     groupIds.unshift(source.groupIds[i]);
   }
-  const lines = result.map(([ring]) => {
-    const origin = ring[0];
-    const points = ring.map(([x, y]) =>
-      pointFrom<LocalPoint>(x - origin[0], y - origin[1]),
-    );
-    const line = newLinearElement({
+  const lines = createPolygonElements(
+    {
       ...source,
-      type: "line",
-      x: origin[0],
-      y: origin[1],
-      ...getSizeFromPoints(points),
-      angle: 0 as Radians,
-      points,
-      polygon: true,
-      roundness: null,
       groupIds: operation === "difference" ? [...source.groupIds] : groupIds,
-      boundElements: null,
-      customData: undefined,
-      index: null,
-      version: 1,
-      versionNonce: 0,
-      created: getUpdatedTimestamp(),
-    });
-    return { ...line, id: randomId(), type: "line" as const, polygon: true };
-  });
+    },
+    result,
+  );
   return { ok: true, elements: lines };
 };
 

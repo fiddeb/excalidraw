@@ -50,6 +50,7 @@ import { getBoundTextElement, handleBindTextResize } from "./textElement";
 import {
   isArrowElement,
   isBindableElement,
+  isBindableContour,
   isBoundToContainer,
   isElbowArrow,
   isRectangularElement,
@@ -57,7 +58,13 @@ import {
   isTextElement,
 } from "./typeChecks";
 
-import { aabbForElement, elementCenterPoint } from "./bounds";
+import { getNearestContourBindingPoint } from "./contourBinding";
+
+import {
+  aabbForElement,
+  elementCenterPoint,
+  getElementAbsoluteCoords,
+} from "./bounds";
 import { updateElbowArrowPoints } from "./elbowArrow";
 import {
   deconstructDiamondElement,
@@ -1153,7 +1160,19 @@ export const bindBindingElement = (
 
   let binding: FixedPointBinding;
 
-  if (isElbowArrow(arrow)) {
+  if (isBindableContour(hoveredElement)) {
+    binding = {
+      elementId: hoveredElement.id,
+      mode: "orbit",
+      ...calculateFixedPointForNonElbowArrowBinding(
+        arrow,
+        hoveredElement,
+        startOrEnd,
+        elementsMap,
+        focusPoint,
+      ),
+    };
+  } else if (isElbowArrow(arrow)) {
     binding = {
       elementId: hoveredElement.id,
       mode: "orbit",
@@ -1242,6 +1261,20 @@ export const reanchorBindingsToOutline = (
       }
 
       const startOrEndName = startOrEnd === "startBinding" ? "start" : "end";
+
+      if (isBindableContour(changedElement)) {
+        updates[startOrEnd] = {
+          ...binding,
+          mode: "orbit",
+          ...calculateFixedPointForNonElbowArrowBinding(
+            element,
+            changedElement,
+            startOrEndName,
+            elementsMap,
+          ),
+        };
+        continue;
+      }
 
       if (isElbowArrow(element)) {
         updates[startOrEnd] = {
@@ -1614,6 +1647,30 @@ const getDistanceForBinding = (
   return distance > bindDistance ? null : distance;
 };
 
+const offsetContourAnchor = (
+  anchor: GlobalPoint,
+  adjacent: GlobalPoint,
+  gap: number,
+  elbowed: boolean,
+): GlobalPoint => {
+  const dx = adjacent[0] - anchor[0];
+  const dy = adjacent[1] - anchor[1];
+  const length = Math.hypot(dx, dy);
+  if (length < PRECISION) {
+    return anchor;
+  }
+  const distance = Math.min(gap, length / 2);
+  if (elbowed) {
+    return Math.abs(dx) >= Math.abs(dy)
+      ? pointFrom<GlobalPoint>(anchor[0] + Math.sign(dx) * distance, anchor[1])
+      : pointFrom<GlobalPoint>(anchor[0], anchor[1] + Math.sign(dy) * distance);
+  }
+  return pointFrom<GlobalPoint>(
+    anchor[0] + (dx / length) * distance,
+    anchor[1] + (dy / length) * distance,
+  );
+};
+
 export const bindPointToSnapToElementOutline = (
   arrowElement: ExcalidrawArrowElement,
   bindableElement: ExcalidrawBindableElement,
@@ -1629,6 +1686,25 @@ export const bindPointToSnapToElementOutline = (
     startOrEnd === "start" ? 0 : -1,
     elementsMap,
   );
+
+  if (isBindableContour(bindableElement)) {
+    const anchor = getNearestContourBindingPoint(
+      bindableElement,
+      elementsMap,
+      point,
+    );
+    const adjacent = LinearElementEditor.getPointAtIndexGlobalCoordinates(
+      arrowElement,
+      startOrEnd === "start" ? 1 : -2,
+      elementsMap,
+    );
+    return offsetContourAnchor(
+      anchor,
+      adjacent,
+      getBindingGap(bindableElement),
+      elbowed,
+    );
+  }
 
   if (arrowElement.points.length < 2) {
     // New arrow creation, so no snapping
@@ -1996,6 +2072,32 @@ export const updateBoundPoint = (
     elementsMap,
   );
 
+  if (isBindableContour(bindableElement)) {
+    const anchor = getNearestContourBindingPoint(
+      bindableElement,
+      elementsMap,
+      focusPoint,
+    );
+    const adjacent = LinearElementEditor.getPointAtIndexGlobalCoordinates(
+      arrow,
+      startOrEnd === "startBinding" ? 1 : -2,
+      elementsMap,
+    );
+    const target = offsetContourAnchor(
+      anchor,
+      adjacent,
+      getBindingGap(bindableElement),
+      isElbowArrow(arrow),
+    );
+    return LinearElementEditor.createPointAt(
+      arrow,
+      elementsMap,
+      target[0],
+      target[1],
+      null,
+    );
+  }
+
   // 0. Short-circuit for inside binding as it doesn't require any
   // calculations and is not affected by other bindings
   if (binding.mode === "inside") {
@@ -2136,6 +2238,18 @@ export const calculateFixedPointForElbowArrowBinding = (
   shouldSnapToOutline = true,
   isMidpointSnappingEnabled = true,
 ): { fixedPoint: FixedPoint } => {
+  if (
+    isBindableContour(hoveredElement) &&
+    isNonDeletedElement(hoveredElement)
+  ) {
+    return calculateFixedPointForNonElbowArrowBinding(
+      linearElement,
+      hoveredElement,
+      startOrEnd,
+      elementsMap,
+    );
+  }
+
   const bounds = [
     hoveredElement.x,
     hoveredElement.y,
@@ -2200,13 +2314,36 @@ export const calculateFixedPointForNonElbowArrowBinding = (
   elementsMap: ElementsMap,
   focusPoint?: GlobalPoint,
 ): { fixedPoint: FixedPoint } => {
-  const edgePoint: GlobalPoint = focusPoint
+  let edgePoint: GlobalPoint = focusPoint
     ? focusPoint
     : LinearElementEditor.getPointAtIndexGlobalCoordinates(
         linearElement,
         startOrEnd === "start" ? 0 : -1,
         elementsMap,
       );
+
+  if (isBindableContour(hoveredElement)) {
+    edgePoint = getNearestContourBindingPoint(
+      hoveredElement,
+      elementsMap,
+      edgePoint,
+    );
+    const [x1, y1, x2, y2, cx, cy] = getElementAbsoluteCoords(
+      hoveredElement,
+      elementsMap,
+    );
+    const local = pointRotateRads(
+      edgePoint,
+      pointFrom<GlobalPoint>(cx, cy),
+      -hoveredElement.angle as Radians,
+    );
+    return {
+      fixedPoint: normalizeFixedPoint([
+        (local[0] - x1) / Math.max(x2 - x1, MIN_BINDABLE_SIZE),
+        (local[1] - y1) / Math.max(y2 - y1, MIN_BINDABLE_SIZE),
+      ]),
+    };
+  }
 
   const elementCenter = elementCenterPoint(hoveredElement, elementsMap);
 
@@ -2673,6 +2810,17 @@ export const getGlobalFixedPointForBindableElement = (
   elementsMap: ElementsMap,
 ): GlobalPoint => {
   const [fixedX, fixedY] = normalizeFixedPoint(fixedPointRatio);
+  if (isBindableContour(element)) {
+    const [x1, y1, x2, y2, cx, cy] = getElementAbsoluteCoords(
+      element,
+      elementsMap,
+    );
+    return pointRotateRads(
+      pointFrom<GlobalPoint>(x1 + (x2 - x1) * fixedX, y1 + (y2 - y1) * fixedY),
+      pointFrom<GlobalPoint>(cx, cy),
+      element.angle,
+    );
+  }
 
   return pointRotateRads(
     pointFrom(
@@ -2921,6 +3069,14 @@ export const getBindingSideMidPoint = (
     !isBindableElement(bindableElement)
   ) {
     return null;
+  }
+
+  if (isBindableContour(bindableElement)) {
+    return getGlobalFixedPointForBindableElement(
+      binding.fixedPoint,
+      bindableElement,
+      elementsMap,
+    );
   }
 
   const center = elementCenterPoint(bindableElement, elementsMap);

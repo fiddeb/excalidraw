@@ -52,7 +52,7 @@ export const fileSave = (
     /** supply without the extension */
     name: string;
     /** file extension */
-    extension: FILE_EXTENSION;
+    extension: FILE_EXTENSION | "drawio";
     mimeTypes?: string[];
     description: string;
     /** existing FileSystemFileHandle */

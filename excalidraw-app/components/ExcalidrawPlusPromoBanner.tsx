@@ -1,3 +1,5 @@
+import { SHOW_UPSTREAM_PROMOTIONS } from "@excalidraw/common";
+
 import { PlusPromoIcon } from "@excalidraw/excalidraw/components/icons";
 import { useI18n } from "@excalidraw/excalidraw/i18n";
 
@@ -7,6 +9,10 @@ export const ExcalidrawPlusPromoBanner = ({
   isSignedIn: boolean;
 }) => {
   const { t } = useI18n();
+  if (!SHOW_UPSTREAM_PROMOTIONS) {
+    return null;
+  }
+
   return (
     <a
       href={

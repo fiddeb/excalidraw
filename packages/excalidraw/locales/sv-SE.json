@@ -1,4 +1,20 @@
 {
+  "savedPalettes": {
+    "useForBoth": "Använd för linje och bakgrund",
+    "topPicksHint": "Använd de fem första färgerna som snabbval. Alla färger finns kvar i paletten.",
+    "title": "Sparade paletter",
+    "choose": "Välj palett",
+    "create": "Ny palett",
+    "edit": "Redigera",
+    "delete": "Ta bort",
+    "name": "Palettens namn",
+    "colors": "HEX-färger eller palettlänk från Coolors",
+    "addCurrent": "Lägg till aktuell färg",
+    "save": "Spara",
+    "cancel": "Avbryt",
+    "invalid": "Ange ett namn och 1–24 HEX-färger eller en länk till en specifik palett på Coolors.",
+    "coolors": "Hitta paletter på Coolors ↗"
+  },
   "ringSegment": {
     "description": "Ersätt markerad ellips med ett cirkulärt ringsegment med samma centrum. Förhandsvisningen visar geometrin; resultatet behåller formens fyllningsstil.",
     "outerRadius": "Ytterradie",
@@ -6,20 +22,18 @@
     "startAngle": "Startvinkel (°)",
     "endAngle": "Slutvinkel (°)",
     "preview": "Förhandsvisning av ringsegment",
-    "anglesHint": "0° pekar åt höger. Positiva vinklar går medurs. Ange innerradie 0 för en sektor.",
-    "invalid": "Använd radier 0 ≤ inner < ytter ≤ 10000 och vinkelspann från 0,1° till mindre än 360°. Vinklar måste vara mellan −3600° och 3600°. Hela ringar stöds inte.",
+    "anglesHint": "0° pekar åt höger. Positiva vinklar går medurs. Inre radie 0 ger en sektor; 360° ger en hel skiva eller donut. Donuts består av grupperade delar vars punkter redigeras separat.",
+    "invalid": "Använd radier 0 ≤ inner < ytter ≤ 10000 och vinkelspann från 0,1° till 360°. Vinklarna måste vara mellan −3600° och 3600°.",
     "create": "Ersätt ellips"
   },
   "shapeUnion": {
     "invalid": "Union kräver enkla slutna konturer utan korsningar eller återspårade kanter. Originalformerna har behållits.",
-    "holes": "Denna union skulle skapa ett hål. Hål med redigerbara konturer stöds ännu inte; originalformerna har behållits.",
     "tooComplex": "Konturerna är för komplexa för union. Minska antalet punkter eller markera färre former. Originalformerna har behållits.",
     "empty": "Unionen saknar yta. Originalformerna har behållits.",
     "failed": "Konturerna kunde inte förenas. Originalformerna har behållits."
   },
   "shapeBoolean": {
     "invalid": "Operationen kräver enkla slutna konturer utan korsningar eller återspårade kanter. Originalformerna har behållits.",
-    "holes": "Operationen skulle skapa ett hål. Hål med redigerbara konturer stöds ännu inte; originalformerna har behållits.",
     "tooComplex": "Konturerna är för komplexa. Minska antalet punkter eller markera färre former. Originalformerna har behållits.",
     "empty": "Operationen saknar yta. Originalformerna har behållits.",
     "failed": "Operationen kunde inte slutföras. Originalformerna har behållits.",
@@ -189,13 +203,13 @@
     "joinLines": "Sammanfoga linjer",
     "joinLinesDescription": "Koppla ihop närmaste ändpunkter med den översta linjens stil; kurvor blir redigerbara linjesegment",
     "intersectionShapes": "Behåll gemensam yta",
-    "intersectionShapesDescription": "Behåll endast ytan som alla markerade former delar. Översta formens stil och lager används. Resultat med hål stoppas. Ett tomt resultat tar bort originalen; ångra återställer dem.",
+    "intersectionShapesDescription": "Behåll endast ytan som alla markerade former delar. Översta formens stil och lager används. Hål använder grupperad fyllning och konturer. Ett tomt resultat tar bort originalen; ångra återställer dem.",
     "differenceShapes": "Subtrahera från understa formen",
-    "differenceShapesDescription": "Subtrahera alla andra markerade former från den understa formen. Behåll utgångsformens stil, grupper och lager. Resultat med hål stoppas. Ett tomt resultat tar bort originalen; ångra återställer dem.",
+    "differenceShapesDescription": "Subtrahera alla andra markerade former från den understa formen. Behåll utgångsformens stil, grupper och lager. Hål använder grupperad fyllning och konturer. Ett tomt resultat tar bort originalen; ångra återställer dem.",
     "xorShapes": "Exkludera överlappning (XOR)",
-    "xorShapesDescription": "Behåll ytor som täcks av ett udda antal markerade former. Med två former försvinner den gemensamma ytan. Översta formens stil och lager används. Resultat med hål stoppas. Ett tomt resultat tar bort originalen; ångra återställer dem.",
+    "xorShapesDescription": "Behåll ytor som täcks av ett udda antal markerade former. Med två former försvinner den gemensamma ytan. Översta formens stil och lager används. Hål använder grupperad fyllning och konturer. Ett tomt resultat tar bort originalen; ångra återställer dem.",
     "unionShapes": "Förena former",
-    "unionShapesDescription": "Förena rektanglar, ellipser, diamanter och slutna konturer med raka segment. Översta formens stil används. Separata ytor förblir separata; resultat med hål stöds inte.",
+    "unionShapesDescription": "Förena rektanglar, ellipser, diamanter och slutna konturer med raka segment. Översta formens stil används. Separata ytor förblir separata; Hål använder grupperad fyllning och konturer.",
     "splitLine": "Dela vid markerade punkter",
     "splitLineDescription": "Dela linjen med raka segment vid markerade punkter. Slutna konturer förlorar fyllningen. En enda delningspunkt ger separata ändpunkter på samma plats; dra en ändpunkt för att öppna ett mellanrum.",
     "reduceLinePoints": "Minska antal punkter",
@@ -243,7 +257,11 @@
     "boxSelectionContain": "Slå in",
     "boxSelectionOverlap": "Överlappande",
     "arrowBinding": "Pilbindning",
-    "midpointSnapping": "Fäst mot mittpunkter"
+    "midpointSnapping": "Fäst mot mittpunkter",
+    "cutAtIntersections": "Klipp vid skärningar",
+    "cutAtIntersectionsDescription": "Dela markerade konturer och linjer där de korsar varandra. Delarna blir öppna linjer utan fyllning. Överlappande kanter stöds inte.",
+    "importEditableSvg": "Importera redigerbar SVG",
+    "exportDrawio": "Exportera till draw.io"
   },
   "elementLink": {
     "title": "Länk till objektet",
@@ -800,5 +818,77 @@
     "spacebar": "Mellanslag",
     "delete": "Delete",
     "mmb": "Scroll-hjul"
+  },
+  "outlineCut": {
+    "invalid": "Markera minst två olåsta konturer eller linjer i samma frame utan bindningar.",
+    "tooComplex": "Konturerna är för komplexa. Minska antalet punkter.",
+    "overlap": "Överlappande kanter kan inte klippas entydigt. Originalen har behållits.",
+    "none": "Inga skärningar att klippa hittades. Originalen har behållits."
+  },
+  "editableSvg": {
+    "description": "Importera grundformer och kurvor som redigerbara Excalidraw-element. Kurvor approximeras med punkter. Hål består av grupperad fyllning och konturer. Fyllningsdelar och konturer kan redigeras separat; deras punkter är inte automatiskt kopplade.",
+    "file": "SVG-fil",
+    "source": "SVG-kod",
+    "analyze": "Granska konvertering",
+    "invalid": "Ingen geometri kunde konverteras. Kontrollera SVG-koden och begränsningarna.",
+    "result": "{{count}} redigerbara element.",
+    "warnings": "Följande utelämnas eller approximeras:",
+    "acceptWarnings": "Importera de delar som stöds med dessa begränsningar.",
+    "import": "Importera element",
+    "tooLarge": "SVG-filen överstiger den maximala filstorleken på 5 MB.",
+    "showSource": "Visa SVG-koden"
+  },
+  "drawio": {
+    "description": "Exportera redigerbara former, text och kopplingar som en .drawio-fil. Konverteringen sker lokalt.",
+    "scope": "Exportera",
+    "all": "Hela ritningen",
+    "selection": "Markerade objekt",
+    "result": "{{count}} objekt exporteras; {{skipped}} utelämnas.",
+    "changes": "Förändringar i draw.io:",
+    "instructions": "I draw.io-editorn i Confluence: välj File → Import From → Device och öppna den nedladdade filen. Menynamnen kan variera mellan versioner.",
+    "download": "Ladda ner .drawio",
+    "error": "Ritningen kunde inte exporteras. Kontrollera ritningen och försök igen.",
+    "warnings": {
+      "appearance": "Skisslinjer och mönsterfyllningar blir rena linjer och enfärgade fyllningar. Rundade kurvor kan approximeras.",
+      "fonts": "Texten är redigerbar. Typsnitt och radavstånd kan skilja sig; Helvetica eller monospace används.",
+      "contours": "Slutna konturer och hål blir egna vektorformer. Flytta, skala och ändra färg i draw.io; punkterna kräver Edit Shape.",
+      "freedraw": "Frihand blir redigerbara punktlinjer utan tryckvariation eller utjämning.",
+      "frames": "Ramarnas konturer exporteras, utan klippning eller ramtillhörighet.",
+      "boundText": "Bunden text blir separata textrutor. Texten följer inte automatiskt när ursprungsformen flyttas eller skalas.",
+      "groups": "Grupper förblir grupperade. Överlappande grupper kan få annan lagerordning.",
+      "unsupported": "Inbäddat innehåll, magiska ramar och objekt som inte stöds utelämnas.",
+      "images": "Beskurna bilder, saknade bilder och bildformat som inte stöds utelämnas. Endast inbäddade PNG, JPEG, GIF och WebP stöds.",
+      "bindings": "Pilkopplingar behålls med fasta anslutningspunkter. Avstånd och dragning kan skilja sig."
+    }
+  },
+  "localAI": {
+    "settings": "AI-inställningar",
+    "description": "Anslut din ChatGPT-prenumeration till Text to diagram via den lokala Pi-servern.",
+    "connected": "ChatGPT är anslutet",
+    "disconnected": "ChatGPT är inte anslutet",
+    "unavailable": "Den lokala AI-servern är inte tillgänglig. Starta den och försök igen.",
+    "startServer": "Starta den lokala servern i projektmappen:",
+    "login": "Anslut ChatGPT",
+    "logout": "Koppla från ChatGPT",
+    "cancel": "Avbryt inloggning",
+    "pending": "Slutför inloggningen i webbläsaren.",
+    "openLogin": "Öppna ChatGPT-inloggning",
+    "manualCallback": "Kom du inte tillbaka efter inloggningen?",
+    "callback": "Klistra in hela återkopplingsadressen från webbläsaren",
+    "continue": "Fortsätt",
+    "model": "Modell",
+    "usage": "Tillgängliga modeller och användningsgränser beror på din ChatGPT-prenumeration. Den lokala servern stöder endast Text to diagram.",
+    "reasoning": "Resonemang"
+  },
+  "nativeAI": {
+    "title": "Rita med AI",
+    "description": "Beskriv nya objekt eller ändringar i de {{count}} markerade objekten. De markerade objektens geometri, text och färger skickas till ChatGPT. Granska förslaget innan du lägger in det.",
+    "prompt": "Vad vill du rita eller ändra?",
+    "generating": "Skapar förslag…",
+    "generate": "Skapa förslag",
+    "result": "Skapa {{created}} objekt och uppdatera {{updated}} markerade objekt.",
+    "preview": "Förhandsvisning av föreslagna native-objekt",
+    "apply": "Lägg in ändringar",
+    "stale": "Canvasen ändrades under genereringen. Skapa ett nytt förslag innan du lägger in det."
   }
 }

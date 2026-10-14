@@ -194,8 +194,18 @@ describe("shape union geometry", () => {
     expect(canUnionShapes([a, { ...b, frameId: "other" }])).toBe(false);
   });
 
-  it("rejects a union with a hole without substituting a background-colored shape", () => {
-    expect(unionShapes(holeSources())).toEqual({ ok: false, reason: "holes" });
+  it("creates a union with a hole using native fill and contour parts", () => {
+    const result = unionShapes(holeSources());
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.elements).toHaveLength(3);
+      expect(result.elements[0].strokeColor).toBe("transparent");
+      expect(
+        result.elements
+          .slice(1)
+          .every((element) => element.backgroundColor === "transparent"),
+      ).toBe(true);
+    }
   });
 
   it("rejects crossing, self-touching, retraced and zero-area contours", () => {
@@ -205,19 +215,6 @@ describe("shape union geometry", () => {
         [100, 100],
         [0, 100],
         [100, 0],
-        [0, 0],
-      ],
-      [
-        [0, 0],
-        [100, 0],
-        [100, 100],
-        [0, 100],
-        [0, 0],
-        [25, 25],
-        [25, 75],
-        [75, 75],
-        [75, 25],
-        [25, 25],
         [0, 0],
       ],
       [
@@ -372,16 +369,17 @@ describe("union shapes action", () => {
     );
   });
 
-  it("keeps every original and explains why a result with a hole is refused", () => {
+  it("selects native hole parts after a union", () => {
     const sources = holeSources();
     API.setElements(sources);
     API.setSelectedElements(sources);
     API.executeAction(actionUnionShapes);
-    expect(h.elements).toEqual(sources);
+    const live = h.elements.filter((element) => !element.isDeleted);
+    expect(live).toHaveLength(3);
     expect(h.state.selectedElementIds).toEqual(
-      Object.fromEntries(sources.map(({ id }) => [id, true])),
+      Object.fromEntries(live.map(({ id }) => [id, true])),
     );
-    expect(h.state.toast?.message).toContain("would create a hole");
+    expect(h.state.toast).toBeNull();
   });
 });
 

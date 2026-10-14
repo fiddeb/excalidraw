@@ -1,3 +1,5 @@
+import { SHOW_UPSTREAM_PROMOTIONS } from "@excalidraw/common";
+
 import {
   loginIcon,
   ExcalLogo,
@@ -9,12 +11,16 @@ import React from "react";
 
 import { isDevEnv } from "@excalidraw/common";
 
+import { useSetAtom } from "@excalidraw/excalidraw/editor-jotai";
+
 import type { Theme } from "@excalidraw/element/types";
 
 import { LanguageList } from "../app-language/LanguageList";
 import { isExcalidrawPlusSignedUser } from "../app_constants";
+import { isLocalAIBackend, nativeAIOpenAtom } from "../localAI";
 
 import { saveDebugState } from "./DebugCanvas";
+import { LocalAISettings } from "./LocalAISettings";
 
 export const AppMainMenu: React.FC<{
   onCollabDialogOpen: () => any;
@@ -24,66 +30,94 @@ export const AppMainMenu: React.FC<{
   refresh: () => void;
 }> = React.memo((props) => {
   const { t } = useI18n();
+  const [showAISettings, setShowAISettings] = React.useState(false);
+  const setNativeAIOpen = useSetAtom(nativeAIOpenAtom);
   return (
-    <MainMenu>
-      <MainMenu.DefaultItems.LoadScene />
-      <MainMenu.DefaultItems.SaveToActiveFile />
-      <MainMenu.DefaultItems.Export />
-      <MainMenu.DefaultItems.SaveAsImage />
-      {props.isCollabEnabled && (
-        <MainMenu.DefaultItems.LiveCollaborationTrigger
-          isCollaborating={props.isCollaborating}
-          onSelect={() => props.onCollabDialogOpen()}
+    <>
+      <MainMenu>
+        <MainMenu.DefaultItems.LoadScene />
+        <MainMenu.DefaultItems.ImportEditableSvg />
+        <MainMenu.DefaultItems.SaveToActiveFile />
+        <MainMenu.DefaultItems.Export />
+        <MainMenu.DefaultItems.SaveAsImage />
+        <MainMenu.DefaultItems.ExportDrawio />
+        {props.isCollabEnabled && (
+          <MainMenu.DefaultItems.LiveCollaborationTrigger
+            isCollaborating={props.isCollaborating}
+            onSelect={() => props.onCollabDialogOpen()}
+          />
+        )}
+        <MainMenu.DefaultItems.CommandPalette className="highlighted" />
+        <MainMenu.DefaultItems.SearchMenu />
+        <MainMenu.DefaultItems.Help />
+        {isLocalAIBackend && (
+          <MainMenu.Item onSelect={() => setNativeAIOpen(true)}>
+            {t("nativeAI.title")}
+          </MainMenu.Item>
+        )}
+        {isLocalAIBackend && (
+          <MainMenu.Item onSelect={() => setShowAISettings(true)}>
+            {t("localAI.settings")}
+          </MainMenu.Item>
+        )}
+        <MainMenu.DefaultItems.ClearCanvas />
+        {SHOW_UPSTREAM_PROMOTIONS && (
+          <>
+            <MainMenu.Separator />
+            <MainMenu.ItemLink
+              icon={ExcalLogo}
+              href={`${
+                import.meta.env.VITE_APP_PLUS_LP
+              }/plus?utm_source=excalidraw&utm_medium=app&utm_content=hamburger`}
+              className=""
+            >
+              Excalidraw+
+            </MainMenu.ItemLink>
+            <MainMenu.DefaultItems.Socials />
+            <MainMenu.ItemLink
+              icon={loginIcon}
+              href={`${import.meta.env.VITE_APP_PLUS_APP}${
+                isExcalidrawPlusSignedUser ? "" : "/sign-up"
+              }?utm_source=signin&utm_medium=app&utm_content=hamburger`}
+              className="highlighted"
+            >
+              {isExcalidrawPlusSignedUser
+                ? t("labels.signIn")
+                : t("labels.signUp")}
+            </MainMenu.ItemLink>
+          </>
+        )}
+        {isDevEnv() && (
+          <MainMenu.Item
+            icon={eyeIcon}
+            onSelect={() => {
+              if (window.visualDebug) {
+                delete window.visualDebug;
+                saveDebugState({ enabled: false });
+              } else {
+                window.visualDebug = { data: [] };
+                saveDebugState({ enabled: true });
+              }
+              props?.refresh();
+            }}
+          >
+            Visual Debug
+          </MainMenu.Item>
+        )}
+        <MainMenu.Separator />
+        <MainMenu.DefaultItems.Preferences />
+        <MainMenu.DefaultItems.ToggleTheme
+          allowSystemTheme
+          theme={props.theme}
         />
+        <MainMenu.ItemCustom>
+          <LanguageList style={{ width: "100%" }} />
+        </MainMenu.ItemCustom>
+        <MainMenu.DefaultItems.ChangeCanvasBackground />
+      </MainMenu>
+      {showAISettings && (
+        <LocalAISettings onClose={() => setShowAISettings(false)} />
       )}
-      <MainMenu.DefaultItems.CommandPalette className="highlighted" />
-      <MainMenu.DefaultItems.SearchMenu />
-      <MainMenu.DefaultItems.Help />
-      <MainMenu.DefaultItems.ClearCanvas />
-      <MainMenu.Separator />
-      <MainMenu.ItemLink
-        icon={ExcalLogo}
-        href={`${
-          import.meta.env.VITE_APP_PLUS_LP
-        }/plus?utm_source=excalidraw&utm_medium=app&utm_content=hamburger`}
-        className=""
-      >
-        Excalidraw+
-      </MainMenu.ItemLink>
-      <MainMenu.DefaultItems.Socials />
-      <MainMenu.ItemLink
-        icon={loginIcon}
-        href={`${import.meta.env.VITE_APP_PLUS_APP}${
-          isExcalidrawPlusSignedUser ? "" : "/sign-up"
-        }?utm_source=signin&utm_medium=app&utm_content=hamburger`}
-        className="highlighted"
-      >
-        {isExcalidrawPlusSignedUser ? t("labels.signIn") : t("labels.signUp")}
-      </MainMenu.ItemLink>
-      {isDevEnv() && (
-        <MainMenu.Item
-          icon={eyeIcon}
-          onSelect={() => {
-            if (window.visualDebug) {
-              delete window.visualDebug;
-              saveDebugState({ enabled: false });
-            } else {
-              window.visualDebug = { data: [] };
-              saveDebugState({ enabled: true });
-            }
-            props?.refresh();
-          }}
-        >
-          Visual Debug
-        </MainMenu.Item>
-      )}
-      <MainMenu.Separator />
-      <MainMenu.DefaultItems.Preferences />
-      <MainMenu.DefaultItems.ToggleTheme allowSystemTheme theme={props.theme} />
-      <MainMenu.ItemCustom>
-        <LanguageList style={{ width: "100%" }} />
-      </MainMenu.ItemCustom>
-      <MainMenu.DefaultItems.ChangeCanvasBackground />
-    </MainMenu>
+    </>
   );
 });

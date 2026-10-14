@@ -40,6 +40,7 @@ interface PickerProps {
   palette: ColorPaletteCustom;
   updateData: (formData?: any) => void;
   children?: React.ReactNode;
+  savedPalettes?: React.ReactNode;
   showTitle?: boolean;
   onEyeDropperToggle: (force?: boolean) => void;
   onEscape: (event: React.KeyboardEvent | KeyboardEvent) => void;
@@ -60,6 +61,7 @@ export const Picker = React.forwardRef(
       palette,
       updateData,
       children,
+      savedPalettes,
       showTitle,
       onEyeDropperToggle,
       onEscape,
@@ -178,6 +180,8 @@ export const Picker = React.forwardRef(
           tabIndex={-1}
         >
           {title && <div className="color-picker__title">{title}</div>}
+
+          {savedPalettes}
 
           {!!customColors.length && (
             <div>

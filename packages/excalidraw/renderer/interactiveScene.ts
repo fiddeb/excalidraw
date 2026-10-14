@@ -51,6 +51,8 @@ import {
   selectGroupsFromGivenElements,
 } from "@excalidraw/element";
 
+import { getContourBindingSegments } from "@excalidraw/element/contourBinding";
+
 import { renderSelectionElement } from "@excalidraw/element";
 
 import { getCommonBounds, getElementAbsoluteCoords } from "@excalidraw/element";
@@ -74,6 +76,7 @@ import type {
   ExcalidrawFrameLikeElement,
   ExcalidrawImageElement,
   ExcalidrawLinearElement,
+  ExcalidrawLineElement,
   ExcalidrawTextElement,
   GroupId,
   NonDeleted,
@@ -255,6 +258,25 @@ const renderSingleLinearPoint = <Point extends GlobalPoint | LocalPoint>(
   );
 };
 
+const renderContourBindingHighlight = (
+  context: CanvasRenderingContext2D,
+  element: ExcalidrawLineElement,
+  elementsMap: ElementsMap,
+  offset = 0,
+) => {
+  const center = elementCenterPoint(element, elementsMap);
+  for (const segment of getContourBindingSegments(element, elementsMap)) {
+    // The caller already rotated the context into the element's local space.
+    const [a, b] = segment.map((point) =>
+      pointRotateRads(point, center, -element.angle as Radians),
+    );
+    context.beginPath();
+    context.moveTo(a[0] - element.x + offset, a[1] - element.y + offset);
+    context.lineTo(b[0] - element.x + offset, b[1] - element.y + offset);
+    context.stroke();
+  }
+};
+
 const renderBindingHighlightForBindableElement_simple = (
   context: CanvasRenderingContext2D,
   suggestedBinding: NonNullable<AppState["suggestedBinding"]>,
@@ -337,6 +359,13 @@ const renderBindingHighlightForBindableElement_simple = (
       context.strokeStyle = `rgba(${BINDING_HIGHLIGHT_RGB[appState.theme]}, 1)`;
 
       switch (suggestedBinding.element.type) {
+        case "line":
+          renderContourBindingHighlight(
+            context,
+            suggestedBinding.element,
+            elementsMap,
+          );
+          break;
         case "ellipse":
           context.beginPath();
           context.ellipse(
@@ -616,6 +645,15 @@ const renderBindingHighlightForBindableElement_complex = (
       })`;
 
       switch (element.type) {
+        case "line":
+          renderContourBindingHighlight(
+            context,
+            element,
+            allElementsMap,
+            offset,
+          );
+          break;
+
         case "ellipse":
           context.beginPath();
           context.ellipse(

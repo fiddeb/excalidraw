@@ -17,6 +17,10 @@ export const supportsResizeObserver =
 
 export const APP_NAME = "Excalidraw";
 
+/** Upstream marketing and community links are opt-in in this fork. */
+export const SHOW_UPSTREAM_PROMOTIONS =
+  import.meta.env?.VITE_APP_SHOW_UPSTREAM_PROMOTIONS === "true";
+
 // distance when creating text before it's considered `autoResize: false`
 // we're using higher threshold so that clicks that end up being drags
 // don't unintentionally create text elements that are wrapped to a few chars

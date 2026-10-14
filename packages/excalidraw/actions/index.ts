@@ -111,3 +111,8 @@ export {
   actionReduceLinePoints,
   actionSplitLine,
 } from "./actionLineOperations";
+
+export { actionCutAtIntersections } from "./actionCutAtIntersections";
+export { actionImportEditableSvg } from "./actionImportEditableSvg";
+
+export { actionExportDrawio } from "./actionExportDrawio";

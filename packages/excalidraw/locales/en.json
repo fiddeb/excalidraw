@@ -1,4 +1,20 @@
 {
+  "savedPalettes": {
+    "useForBoth": "Use for Stroke & Background",
+    "topPicksHint": "Use the first five colors as quick picks. All colors remain in the palette.",
+    "title": "Saved palettes",
+    "choose": "Choose palette",
+    "create": "New palette",
+    "edit": "Edit",
+    "delete": "Delete",
+    "name": "Palette name",
+    "colors": "HEX colors or Coolors palette link",
+    "addCurrent": "Add current color",
+    "save": "Save",
+    "cancel": "Cancel",
+    "invalid": "Enter a name and 1–24 HEX colors, or a link to a specific Coolors palette.",
+    "coolors": "Find palettes on Coolors ↗"
+  },
   "ringSegment": {
     "description": "Replace the selected ellipse with a circular ring segment centered at the same position. The preview shows geometry; the result keeps the original fill style.",
     "outerRadius": "Outer radius",
@@ -6,20 +22,18 @@
     "startAngle": "Start angle (°)",
     "endAngle": "End angle (°)",
     "preview": "Ring segment preview",
-    "anglesHint": "0° points right. Positive angles go clockwise. Use an inner radius of 0 for a sector.",
-    "invalid": "Use radii 0 ≤ inner < outer ≤ 10000 and an angle span from 0.1° to less than 360°. Angles must be between −3600° and 3600°. Full rings are not supported.",
+    "anglesHint": "0° points right. Positive angles go clockwise. Inner radius 0 gives a sector; 360° gives a full disk or donut. Donuts consist of grouped parts whose points are edited separately.",
+    "invalid": "Use radii 0 ≤ inner < outer ≤ 10000 and an angle span from 0.1° to 360°. Angles must be between −3600° and 3600°.",
     "create": "Replace ellipse"
   },
   "shapeUnion": {
     "invalid": "Union needs simple closed outlines without crossings or retraced edges. The original shapes were kept.",
-    "holes": "This union would create a hole. Holes with editable outlines are not supported yet; the original shapes were kept.",
     "tooComplex": "These outlines are too complex for union. Reduce their point counts or select fewer shapes. The original shapes were kept.",
     "empty": "The union has no area. The original shapes were kept.",
     "failed": "The outlines could not be combined. The original shapes were kept."
   },
   "shapeBoolean": {
     "invalid": "The operation needs simple closed outlines without crossings or retraced edges. The original shapes were kept.",
-    "holes": "This operation would create a hole. Holes with editable outlines are not supported yet; the original shapes were kept.",
     "tooComplex": "These outlines are too complex. Reduce their point counts or select fewer shapes. The original shapes were kept.",
     "empty": "The operation has no area. The original shapes were kept.",
     "failed": "The operation could not be completed. The original shapes were kept.",
@@ -193,13 +207,13 @@
     "joinLines": "Join lines",
     "joinLinesDescription": "Connect the nearest endpoints using the topmost line’s style; curves become editable line segments",
     "intersectionShapes": "Intersection of shapes",
-    "intersectionShapesDescription": "Keep only the area shared by all selected shapes, using the topmost style and layer. Results with holes are refused. An empty result removes the originals; undo restores them.",
+    "intersectionShapesDescription": "Keep only the area shared by all selected shapes, using the topmost style and layer. Holes use grouped native fills and contours. An empty result removes the originals; undo restores them.",
     "differenceShapes": "Subtract from bottom shape",
-    "differenceShapesDescription": "Subtract every other selected shape from the bottommost shape. Keep the base’s style, groups and layer. Results with holes are refused. An empty result removes the originals; undo restores them.",
+    "differenceShapesDescription": "Subtract every other selected shape from the bottommost shape. Keep the base’s style, groups and layer. Holes use grouped native fills and contours. An empty result removes the originals; undo restores them.",
     "xorShapes": "Exclude overlap (XOR)",
-    "xorShapesDescription": "Keep areas covered by an odd number of selected shapes. With two shapes, the shared area disappears. Use the topmost style and layer. Results with holes are refused. An empty result removes the originals; undo restores them.",
+    "xorShapesDescription": "Keep areas covered by an odd number of selected shapes. With two shapes, the shared area disappears. Use the topmost style and layer. Holes use grouped native fills and contours. An empty result removes the originals; undo restores them.",
     "unionShapes": "Union shapes",
-    "unionShapesDescription": "Combine rectangles, ellipses, diamonds and closed straight outlines. Use the topmost shape’s style. Disconnected areas remain separate; results with holes are not supported.",
+    "unionShapesDescription": "Combine rectangles, ellipses, diamonds and closed straight outlines. Use the topmost shape’s style. Holes use grouped native fills and contours.",
     "splitLine": "Split at selected points",
     "splitLineDescription": "Split the straight line at selected vertices. Closed outlines lose their fill. A single cut on an outline creates separate endpoints at the same position; drag an endpoint to open a gap.",
     "reduceLinePoints": "Reduce points",
@@ -253,7 +267,11 @@
     "showHints": "Show hints",
     "inputDevice": "Input",
     "inputDeviceTrackpad": "Trackpad",
-    "inputDeviceMouse": "Mouse"
+    "inputDeviceMouse": "Mouse",
+    "cutAtIntersections": "Cut at intersections",
+    "cutAtIntersectionsDescription": "Split selected outlines and lines where they intersect. Pieces become open lines without fill. Overlapping edges are not supported.",
+    "importEditableSvg": "Import editable SVG",
+    "exportDrawio": "Export to draw.io"
   },
   "elementLink": {
     "title": "Link to object",
@@ -827,5 +845,77 @@
     "spacebar": "Space",
     "delete": "Delete",
     "mmb": "Scroll wheel"
+  },
+  "outlineCut": {
+    "invalid": "Select at least two unlocked outlines or lines in the same frame without bindings.",
+    "tooComplex": "These outlines are too complex. Reduce their point counts.",
+    "overlap": "Overlapping edges cannot be cut unambiguously. The originals were kept.",
+    "none": "No intersections to cut were found. The originals were kept."
+  },
+  "editableSvg": {
+    "description": "Import basic shapes and curves as editable Excalidraw elements. Curves are approximated with points. Holes use grouped fills and outlines. Fill parts and outlines can be edited separately; their points are not automatically linked.",
+    "file": "SVG file",
+    "source": "SVG source",
+    "analyze": "Review conversion",
+    "invalid": "No geometry could be converted. Check the SVG source and conversion limitations.",
+    "result": "{{count}} editable elements.",
+    "warnings": "The following are omitted or approximated:",
+    "acceptWarnings": "Import the supported parts with these limitations.",
+    "import": "Import elements",
+    "tooLarge": "The SVG file exceeds the maximum size of 5 MB.",
+    "showSource": "Show SVG source"
+  },
+  "drawio": {
+    "description": "Export editable shapes, text and connectors as a .drawio file. Conversion happens locally.",
+    "scope": "Export",
+    "all": "Entire drawing",
+    "selection": "Selected elements",
+    "result": "{{count}} elements exported; {{skipped}} omitted.",
+    "changes": "Changes in draw.io:",
+    "instructions": "In the draw.io editor in Confluence, use File → Import From → Device and select the downloaded file. Menu names can vary by version.",
+    "download": "Download .drawio",
+    "error": "Could not export the drawing. Check the drawing and try again.",
+    "warnings": {
+      "appearance": "Sketch strokes and patterned fills become clean strokes and solid fills. Rounded paths may be approximated.",
+      "fonts": "Text remains editable. Fonts and line spacing may differ; Helvetica or monospace is used.",
+      "contours": "Closed paths and holes become custom vector shapes. Move, resize and style them in draw.io; their points require Edit Shape.",
+      "freedraw": "Freehand strokes become editable polylines without pressure variation or smoothing.",
+      "frames": "Frame outlines are exported, without clipping or frame membership.",
+      "boundText": "Bound text becomes a separate text box. Moving or resizing its original container does not update the text.",
+      "groups": "Groups remain grouped. Overlapping groups may have a different stacking order.",
+      "unsupported": "Embedded content, magic frames and unsupported elements are omitted.",
+      "images": "Cropped, missing or unsupported images are omitted. Only embedded PNG, JPEG, GIF and WebP images are supported.",
+      "bindings": "Arrow connections remain attached, using fixed attachment points. Gaps and routing can differ."
+    }
+  },
+  "localAI": {
+    "settings": "AI settings",
+    "description": "Connect your ChatGPT subscription to Text to diagram through the local Pi server.",
+    "connected": "ChatGPT connected",
+    "disconnected": "ChatGPT not connected",
+    "unavailable": "The local AI server is unavailable. Start it and try again.",
+    "startServer": "Start the local server in the project folder:",
+    "login": "Connect ChatGPT",
+    "logout": "Disconnect ChatGPT",
+    "cancel": "Cancel login",
+    "pending": "Complete sign-in in your browser.",
+    "openLogin": "Open ChatGPT sign-in",
+    "manualCallback": "Callback did not complete?",
+    "callback": "Paste the full callback URL from the browser",
+    "continue": "Continue",
+    "model": "Model",
+    "usage": "Model availability and usage limits depend on your ChatGPT subscription. Only Text to diagram is supported by this local server.",
+    "reasoning": "Reasoning"
+  },
+  "nativeAI": {
+    "title": "Draw with AI",
+    "description": "Describe new objects or changes to the {{count}} selected objects. Selected object geometry, text and colors are sent to ChatGPT. Review the proposal before applying it.",
+    "prompt": "What would you like to draw or change?",
+    "generating": "Generating proposal…",
+    "generate": "Generate proposal",
+    "result": "Create {{created}} objects and update {{updated}} selected objects.",
+    "preview": "Preview of proposed native objects",
+    "apply": "Apply changes",
+    "stale": "The canvas changed while generating. Generate a new proposal before applying."
   }
 }

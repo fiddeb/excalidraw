@@ -14,6 +14,8 @@ interface StreamingOptions {
   extractRateLimits?: boolean;
   signal?: AbortSignal;
   onStreamCreated?: () => void;
+  headers?: Record<string, string>;
+  body?: Record<string, unknown>;
 }
 
 export type StreamChunk =
@@ -103,8 +105,9 @@ export async function TTDStreamFetch(
       headers: {
         Accept: "text/event-stream",
         "Content-Type": "application/json",
+        ...options.headers,
       },
-      body: JSON.stringify({ messages }),
+      body: JSON.stringify({ ...options.body, messages }),
       signal,
     });
 

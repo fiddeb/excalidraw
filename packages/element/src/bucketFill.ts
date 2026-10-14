@@ -1383,7 +1383,7 @@ const simplifyRing = (
  * pattern fills' scanline parity), leaving the hole interior unpainted
  * while the result stays one closed polygon.
  */
-const spliceHoleIntoRing = (
+export const spliceHoleIntoRing = (
   ring: GlobalPoint[],
   hole: GlobalPoint[],
 ): GlobalPoint[] => {

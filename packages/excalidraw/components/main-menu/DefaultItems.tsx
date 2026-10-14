@@ -1,3 +1,5 @@
+import { SHOW_UPSTREAM_PROMOTIONS } from "@excalidraw/common";
+
 import clsx from "clsx";
 
 import { THEME } from "@excalidraw/common";
@@ -7,6 +9,8 @@ import type { Theme } from "@excalidraw/element/types";
 import {
   actionClearCanvas,
   actionLoadScene,
+  actionImportEditableSvg,
+  actionExportDrawio,
   actionSaveToActiveFile,
   actionShortcuts,
   actionToggleArrowBinding,
@@ -374,6 +378,10 @@ Export.displayName = "Export";
 export const Socials = () => {
   const { t } = useI18n();
 
+  if (!SHOW_UPSTREAM_PROMOTIONS) {
+    return null;
+  }
+
   return (
     <>
       <DropdownMenuItemLink
@@ -705,3 +713,37 @@ Preferences.ToggleViewMode = PreferencesToggleViewModeItem;
 Preferences.ToggleElementProperties = PreferencesToggleElementPropertiesItem;
 
 Preferences.displayName = "Preferences";
+
+export const ImportEditableSvg = () => {
+  const { t } = useI18n();
+  const actionManager = useExcalidrawActionManager();
+  const appState = useUIAppState();
+  if (appState.viewModeEnabled) {
+    return null;
+  }
+  return (
+    <DropdownMenuItem
+      icon={LoadIcon}
+      onSelect={() => actionManager.executeAction(actionImportEditableSvg)}
+      aria-label={t("labels.importEditableSvg")}
+    >
+      {t("labels.importEditableSvg")}
+    </DropdownMenuItem>
+  );
+};
+ImportEditableSvg.displayName = "ImportEditableSvg";
+
+export const ExportDrawio = () => {
+  const actionManager = useExcalidrawActionManager();
+  const { t } = useI18n();
+  return (
+    <DropdownMenuItem
+      icon={ExportImageIcon}
+      onSelect={() => actionManager.executeAction(actionExportDrawio)}
+      aria-label={t("labels.exportDrawio")}
+    >
+      {t("labels.exportDrawio")}
+    </DropdownMenuItem>
+  );
+};
+ExportDrawio.displayName = "ExportDrawio";

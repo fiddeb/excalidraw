@@ -113,3 +113,6 @@ export * from "./lineOperations";
 export * from "./shapeToLine";
 export * from "./ringSegment";
 export * from "./booleanOperations";
+
+export * from "./cutAtIntersections";
+export * from "./polygonContours";

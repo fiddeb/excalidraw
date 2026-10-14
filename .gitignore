@@ -19,6 +19,8 @@ logs
 node_modules
 npm-debug.log*
 package-lock.json
+!ai-server/package-lock.json
+ai-server/.state/
 yarn-debug.log*
 yarn-error.log*
 packages/excalidraw/types

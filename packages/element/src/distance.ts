@@ -1,5 +1,6 @@
 import {
   curvePointDistance,
+  pointDistance,
   distanceToLineSegment,
   pointRotateRads,
   polygonIncludesPointNonZero,
@@ -14,6 +15,9 @@ import {
   deconstructLinearOrFreeDrawElement,
   deconstructRectanguloidElement,
 } from "./utils";
+
+import { isBindableContour } from "./typeChecks";
+import { getNearestContourBindingPoint } from "./contourBinding";
 
 import { elementCenterPoint } from "./bounds";
 
@@ -32,6 +36,12 @@ export const distanceToElement = (
   elementsMap: ElementsMap,
   p: GlobalPoint,
 ): number => {
+  if (isBindableContour(element)) {
+    return pointDistance(
+      p,
+      getNearestContourBindingPoint(element, elementsMap, p),
+    );
+  }
   switch (element.type) {
     case "selection":
     case "rectangle":

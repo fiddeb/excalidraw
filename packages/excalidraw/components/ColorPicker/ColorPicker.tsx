@@ -32,6 +32,7 @@ import {
 
 import { ColorInput } from "./ColorInput";
 import { Picker } from "./Picker";
+import { SavedColorPalettes } from "./SavedColorPalettes";
 import PickerHeading from "./PickerHeading";
 import { TopPicks } from "./TopPicks";
 import { activeColorPickerSectionAtom } from "./colorPickerUtils";
@@ -105,6 +106,20 @@ const ColorPickerPopupContent = ({
   const [, setActiveColorPickerSection] = useAtom(activeColorPickerSectionAtom);
 
   const [eyeDropperState, setEyeDropperState] = useAtom(activeEyeDropperAtom);
+
+  const handleColorChange = (changedColor: string) => {
+    // Save caret position before color change if editing text
+    const savedSelection = appState.editingTextElement
+      ? saveCaretPosition(app.ownerDocument)
+      : null;
+
+    onChange(changedColor);
+
+    // Restore caret position after color change if editing text
+    if (appState.editingTextElement && savedSelection) {
+      restoreCaretPosition(savedSelection, app.ownerDocument);
+    }
+  };
 
   const colorInputJSX = (
     <div>
@@ -200,19 +215,15 @@ const ColorPickerPopupContent = ({
           onResetTopPicks={onResetTopPicks}
           color={color}
           theme={appState.theme}
-          onChange={(changedColor) => {
-            // Save caret position before color change if editing text
-            const savedSelection = appState.editingTextElement
-              ? saveCaretPosition(app.ownerDocument)
-              : null;
-
-            onChange(changedColor);
-
-            // Restore caret position after color change if editing text
-            if (appState.editingTextElement && savedSelection) {
-              restoreCaretPosition(savedSelection, app.ownerDocument);
-            }
-          }}
+          onChange={handleColorChange}
+          savedPalettes={
+            <SavedColorPalettes
+              appState={appState}
+              color={color}
+              onChange={handleColorChange}
+              excludedColors={excludedColors}
+            />
+          }
           onEyeDropperToggle={(force) => {
             setEyeDropperState((state) => {
               if (force) {

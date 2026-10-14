@@ -5,6 +5,7 @@ import React from "react";
 
 import {
   CLASSES,
+  SHOW_UPSTREAM_PROMOTIONS,
   DEFAULT_SIDEBAR,
   TOOL_TYPE,
   arrayToMap,
@@ -36,6 +37,11 @@ import {
   type ColorDefaultKey,
 } from "../actions/colorTargets";
 
+import { actionImportEditableSvg } from "../actions/actionImportEditableSvg";
+
+import { DrawioExportDialog } from "./DrawioExportDialog";
+
+import { EditableSvgDialog } from "./EditableSvgDialog";
 import { RingSegmentDialog } from "./RingSegmentDialog";
 
 import { SelectedShapeActions, CompactShapeActions } from "./Actions";
@@ -120,6 +126,7 @@ const DefaultMainMenu: React.FC<{
   return (
     <MainMenu __fallback>
       <MainMenu.DefaultItems.LoadScene />
+      <MainMenu.DefaultItems.ImportEditableSvg />
       <MainMenu.DefaultItems.SaveToActiveFile />
       {/* FIXME we should to test for this inside the item itself */}
       {UIOptions.canvasActions.export && <MainMenu.DefaultItems.Export />}
@@ -127,13 +134,15 @@ const DefaultMainMenu: React.FC<{
       {UIOptions.canvasActions.saveAsImage && (
         <MainMenu.DefaultItems.SaveAsImage />
       )}
+      {UIOptions.canvasActions.export && <MainMenu.DefaultItems.ExportDrawio />}
       <MainMenu.DefaultItems.SearchMenu />
       <MainMenu.DefaultItems.Help />
       <MainMenu.DefaultItems.ClearCanvas />
-      <MainMenu.Separator />
-      <MainMenu.Group title="Excalidraw links">
-        <MainMenu.DefaultItems.Socials />
-      </MainMenu.Group>
+      {SHOW_UPSTREAM_PROMOTIONS && (
+        <MainMenu.Group title="Excalidraw links">
+          <MainMenu.DefaultItems.Socials />
+        </MainMenu.Group>
+      )}
       <MainMenu.Separator />
       <MainMenu.DefaultItems.ToggleTheme allowSystemTheme={false} />
       <MainMenu.DefaultItems.ChangeCanvasBackground />
@@ -608,6 +617,17 @@ const LayerUI = ({
             />
           ) : null;
         })()}
+      {defaultUIEnabled && appState.openDialog?.name === "drawioExport" && (
+        <DrawioExportDialog onClose={() => setAppState({ openDialog: null })} />
+      )}
+      {defaultUIEnabled && appState.openDialog?.name === "editableSvg" && (
+        <EditableSvgDialog
+          onClose={() => setAppState({ openDialog: null })}
+          onSubmit={(source) =>
+            actionManager.executeAction(actionImportEditableSvg, "ui", source)
+          }
+        />
+      )}
       <ActiveConfirmDialog />
       {defaultUIEnabled && appState.openDialog?.name === "elementLinkSelector" && (
         <ElementLinkDialog

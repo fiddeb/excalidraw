@@ -135,6 +135,8 @@ export const getDefaultAppState = (): Omit<
     activeLockedId: null,
     bindMode: "orbit",
     boxSelectionMode: "contain",
+    colorPalettes: [],
+    activeColorPaletteId: null,
     colorTopPicks: {
       elementStroke: null,
       elementBackground: null,
@@ -286,6 +288,8 @@ const APP_STATE_STORAGE_CONF = (<
   lockedMultiSelections: { browser: true, export: true, server: true },
   activeLockedId: { browser: false, export: false, server: false },
   bindMode: { browser: true, export: false, server: false },
+  colorPalettes: { browser: true, export: false, server: false },
+  activeColorPaletteId: { browser: true, export: false, server: false },
   colorTopPicks: { browser: true, export: false, server: false },
   fontTopPicks: { browser: true, export: false, server: false },
 });

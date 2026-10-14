@@ -1,3 +1,5 @@
+import { getCompoundPolygonGroups } from "@excalidraw/element/polygonContours";
+
 import {
   DEFAULT_FONT_SIZE,
   DEFAULT_FONT_FAMILY,
@@ -96,6 +98,12 @@ export const actionPasteStyles = register({
       includeBoundTextElement: true,
     });
     const selectedElementIds = selectedElements.map((element) => element.id);
+    const compoundGroups = getCompoundPolygonGroups(selectedElements);
+    const boundaryIds = new Set(
+      [...compoundGroups.values()].flatMap(({ boundaries }) =>
+        boundaries.map(({ id }) => id),
+      ),
+    );
     const elementsMap = arrayToMap(elements);
     // whether the copied text was a sticky label is decided by the copied
     // snapshot — its container may be gone from the live scene by now
@@ -116,21 +124,28 @@ export const actionPasteStyles = register({
               return element;
             }
             let newElement = newElementWith(element, {
-              backgroundColor: elementStylesToCopyFrom?.backgroundColor,
+              backgroundColor: boundaryIds.has(element.id)
+                ? element.backgroundColor
+                : elementStylesToCopyFrom?.backgroundColor,
               strokeWidth: elementStylesToCopyFrom?.strokeWidth,
-              strokeColor: elementStylesToCopyFrom?.strokeColor,
+              strokeColor: compoundGroups.has(element.id)
+                ? element.strokeColor
+                : elementStylesToCopyFrom?.strokeColor,
               strokeStyle: elementStylesToCopyFrom?.strokeStyle,
               fillStyle: elementStylesToCopyFrom?.fillStyle,
               opacity: elementStylesToCopyFrom?.opacity,
               roughness: elementStylesToCopyFrom?.roughness,
-              roundness: elementStylesToCopyFrom.roundness
-                ? canApplyRoundnessTypeToElement(
-                    elementStylesToCopyFrom.roundness.type,
-                    element,
-                  )
-                  ? elementStylesToCopyFrom.roundness
-                  : getDefaultRoundnessTypeForElement(element)
-                : null,
+              roundness:
+                compoundGroups.has(element.id) || boundaryIds.has(element.id)
+                  ? null
+                  : elementStylesToCopyFrom.roundness
+                  ? canApplyRoundnessTypeToElement(
+                      elementStylesToCopyFrom.roundness.type,
+                      element,
+                    )
+                    ? elementStylesToCopyFrom.roundness
+                    : getDefaultRoundnessTypeForElement(element)
+                  : null,
             });
 
             if (isTextElement(newElement)) {

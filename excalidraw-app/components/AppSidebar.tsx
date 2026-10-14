@@ -1,3 +1,5 @@
+import { SHOW_UPSTREAM_PROMOTIONS } from "@excalidraw/common";
+
 import { DefaultSidebar, Sidebar, THEME } from "@excalidraw/excalidraw";
 import {
   messageCircleIcon,
@@ -67,6 +69,9 @@ const SidebarPromoCopy = (props: SidebarPromoCopyProps) => {
 
 export const AppSidebar = () => {
   const { theme, openSidebar } = useUIAppState();
+  if (!SHOW_UPSTREAM_PROMOTIONS) {
+    return <DefaultSidebar />;
+  }
 
   return (
     <DefaultSidebar>

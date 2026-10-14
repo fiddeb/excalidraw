@@ -216,6 +216,7 @@ export const SelectedShapeActions = ({
             {renderAction("closeLine")}
             {renderAction("reduceLinePoints")}
             {renderAction("splitLine")}
+            {renderAction("cutAtIntersections")}
             {renderAction("unionShapes")}
             {renderAction("intersectionShapes")}
             {renderAction("differenceShapes")}
@@ -686,6 +687,7 @@ export const CompactShapeActions = ({
       {renderAction("closeLine")}
       {renderAction("reduceLinePoints")}
       {renderAction("splitLine")}
+      {renderAction("cutAtIntersections")}
       {renderAction("unionShapes")}
       {renderAction("intersectionShapes")}
       {renderAction("differenceShapes")}
@@ -847,6 +849,7 @@ export const MobileShapeActions = ({
         {renderAction("closeLine")}
         {renderAction("reduceLinePoints")}
         {renderAction("splitLine")}
+        {renderAction("cutAtIntersections")}
         {renderAction("unionShapes")}
         {renderAction("intersectionShapes")}
         {renderAction("differenceShapes")}

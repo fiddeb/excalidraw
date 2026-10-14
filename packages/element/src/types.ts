@@ -291,6 +291,7 @@ export type ExcalidrawTextElement = _ExcalidrawElementBase &
   }>;
 
 export type ExcalidrawBindableElement =
+  | ExcalidrawLineElement
   | ExcalidrawRectangleElement
   | ExcalidrawStickyNoteElement
   | ExcalidrawDiamondElement

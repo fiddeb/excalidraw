@@ -59,6 +59,8 @@ import {
   getBindingStrategyForDraggingBindingElementEndpoints,
   isBindingEnabled,
   updateBoundPoint,
+  updateBoundElements,
+  unbindBindingElement,
 } from "./binding";
 import {
   getElementAbsoluteCoords,
@@ -69,7 +71,12 @@ import {
 import { headingIsHorizontal, vectorToHeading } from "./heading";
 import { mutateElement } from "./mutateElement";
 import { getBoundTextElement, handleBindTextResize } from "./textElement";
-import { isArrowElement, isBindingElement, isElbowArrow } from "./typeChecks";
+import {
+  isArrowElement,
+  isBindingElement,
+  isElbowArrow,
+  isBindableContour,
+} from "./typeChecks";
 
 import { ShapeCache, toggleLinePolygonState } from "./shape";
 
@@ -1847,6 +1854,7 @@ export class LinearElementEditor {
       isMidpointSnappingEnabled?: boolean;
     },
   ) {
+    const wasContour = isBindableContour(element);
     if (isElbowArrow(element)) {
       const updates: {
         startBinding?: FixedPointBinding | null;
@@ -1889,6 +1897,23 @@ export class LinearElementEditor {
         x: element.x + rotatedOffset[0],
         y: element.y + rotatedOffset[1],
       });
+    }
+    if (isBindableContour(element)) {
+      updateBoundElements(element, scene);
+    } else if (wasContour) {
+      // An opened contour no longer offers an attachment boundary.
+      for (const { id } of element.boundElements || []) {
+        const arrow = scene.getNonDeletedElementsMap().get(id);
+        if (!isArrowElement(arrow)) {
+          continue;
+        }
+        if (arrow.startBinding?.elementId === element.id) {
+          unbindBindingElement(arrow, "start", scene);
+        }
+        if (arrow.endBinding?.elementId === element.id) {
+          unbindBindingElement(arrow, "end", scene);
+        }
+      }
     }
   }
 

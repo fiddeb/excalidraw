@@ -1,3 +1,5 @@
+import { SHOW_UPSTREAM_PROMOTIONS } from "@excalidraw/common";
+
 import Trans from "./Trans";
 
 const BraveMeasureTextError = () => {
@@ -25,17 +27,19 @@ const BraveMeasureTextError = () => {
           )}
         />
       </p>
-      <p>
-        <Trans
-          i18nKey="errors.brave_measure_text_error.line4"
-          issueLink={(el) => (
-            <a href="https://github.com/excalidraw/excalidraw/issues/new">
-              {el}
-            </a>
-          )}
-          discordLink={(el) => <a href="https://discord.gg/UexuTaE">{el}.</a>}
-        />
-      </p>
+      {SHOW_UPSTREAM_PROMOTIONS && (
+        <p>
+          <Trans
+            i18nKey="errors.brave_measure_text_error.line4"
+            issueLink={(el) => (
+              <a href="https://github.com/excalidraw/excalidraw/issues/new">
+                {el}
+              </a>
+            )}
+            discordLink={(el) => <a href="https://discord.gg/UexuTaE">{el}.</a>}
+          />
+        </p>
+      )}
     </div>
   );
 };

@@ -107,6 +107,8 @@ import type {
 
 import type { MarkOptional, Mutable } from "@excalidraw/common/utility-types";
 
+import { restoreColorPalettes } from "../colorPalettes";
+
 import { getDefaultAppState } from "../appState";
 
 import {
@@ -1297,7 +1299,15 @@ export const restoreAppState = (
     nextAppState.boxSelectionMode = boxSelectionMode;
   }
 
-  // drop malformed persisted custom top picks (imported data is untrusted)
+  // Drop malformed persisted color preferences (imported data is untrusted).
+  nextAppState.colorPalettes = restoreColorPalettes(nextAppState.colorPalettes);
+  if (
+    !nextAppState.colorPalettes.some(
+      ({ id }) => id === nextAppState.activeColorPaletteId,
+    )
+  ) {
+    nextAppState.activeColorPaletteId = null;
+  }
   nextAppState.colorTopPicks = {
     elementStroke: restoreColorTopPicksList(
       nextAppState.colorTopPicks?.elementStroke,
