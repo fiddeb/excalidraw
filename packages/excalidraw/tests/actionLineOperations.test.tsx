@@ -11,7 +11,10 @@ import {
   closeLine,
   getLineOperationPoints,
   joinLines,
+  MAX_JOIN_LINES,
+  MAX_JOIN_POINTS,
 } from "@excalidraw/element/lineOperations";
+import * as lineOperations from "@excalidraw/element/lineOperations";
 import { pointFrom } from "@excalidraw/math";
 
 import type { LocalPoint, Radians } from "@excalidraw/math";
@@ -46,6 +49,93 @@ const line = (coordinates: [number, number][]) => {
 };
 
 describe("line operations geometry", () => {
+  it("calculates bounds for dense imported paths without exceeding the argument limit", () => {
+    const points = Array.from({ length: 200_000 }, (_, i) =>
+      pointFrom<LocalPoint>(i - 100_000, i % 2),
+    );
+    expect(getSizeFromPoints(points)).toEqual({ width: 199_999, height: 1 });
+  });
+
+  it("rejects excessive work before joining and leaves inputs intact", () => {
+    const dense = line(
+      Array.from({ length: MAX_JOIN_POINTS }, (_, i) => [i, i % 2]),
+    );
+    const small = line([
+      [0, 0],
+      [100, 0],
+    ]);
+    const before = JSON.stringify(dense);
+    expect(() => joinLines([dense, small], arrayToMap([dense, small]))).toThrow(
+      "tooComplex",
+    );
+    expect(JSON.stringify(dense)).toBe(before);
+    const many = Array.from({ length: MAX_JOIN_LINES + 1 }, () => small);
+    expect(() => joinLines(many, arrayToMap(many))).toThrow("tooComplex");
+  });
+
+  it("rejects nonfinite curve coordinates before curve subdivision", () => {
+    const malformed = {
+      ...line([
+        [0, 0],
+        [50, 80],
+        [100, 0],
+      ]),
+      angle: NaN as Radians,
+      roundness: { type: ROUNDNESS.PROPORTIONAL_RADIUS },
+    };
+    const small = line([
+      [100, 0],
+      [200, 0],
+    ]);
+    expect(() =>
+      joinLines([malformed, small], arrayToMap([malformed, small])),
+    ).toThrow("invalidGeometry");
+  });
+
+  it("enforces the point budget after sampling curves", () => {
+    const curve = {
+      ...line([
+        [0, 0],
+        [50, 80],
+        [100, 0],
+      ]),
+      roundness: { type: ROUNDNESS.PROPORTIONAL_RADIUS },
+    };
+    expect(() => getLineOperationPoints(curve, arrayToMap([curve]), 3)).toThrow(
+      "tooComplex",
+    );
+  });
+
+  it("joins three rotated curves without moving or mutating their contours", () => {
+    const inputs = [0, 100, 200].map((x) => ({
+      ...line([
+        [0, 0],
+        [50, 80],
+        [100, 0],
+      ]),
+      x,
+      angle: (Math.PI / 6) as Radians,
+      roundness: { type: ROUNDNESS.PROPORTIONAL_RADIUS },
+    }));
+    const before = JSON.stringify(inputs);
+    const map = arrayToMap(inputs);
+    const expected = inputs.flatMap((input) =>
+      getLineOperationPoints(input, map),
+    );
+    const joined = joinLines(inputs, map);
+    const actual = LinearElementEditor.getPointsGlobalCoordinates(
+      joined,
+      arrayToMap([joined]),
+    );
+    for (const [x, y] of expected) {
+      expect(
+        actual.some(
+          ([ax, ay]) => Math.abs(ax - x) < 1e-6 && Math.abs(ay - y) < 1e-6,
+        ),
+      ).toBe(true);
+    }
+    expect(JSON.stringify(inputs)).toBe(before);
+  });
   it.each([
     [
       [100, 0],
@@ -186,6 +276,112 @@ describe("line operations geometry", () => {
 describe("line operation actions", () => {
   beforeEach(async () => {
     await render(<Excalidraw handleKeyboardGlobally={true} />);
+  });
+
+  it("joins three ordinary lines into a triangle and supports undo and redo", () => {
+    const inputs = [
+      line([
+        [0, 0],
+        [100, 0],
+      ]),
+      line([
+        [100, 0],
+        [50, 80],
+      ]),
+      line([
+        [50, 80],
+        [0, 0],
+      ]),
+    ];
+    API.updateScene({
+      elements: inputs,
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
+    });
+    API.setSelectedElements(inputs);
+    fireEvent.click(screen.getByRole("button", { name: "Join lines" }));
+    expect(h.elements.filter((el) => !el.isDeleted)).toHaveLength(1);
+    expect(h.elements.find((el) => !el.isDeleted)).toMatchObject({
+      type: "line",
+      polygon: true,
+      points: [
+        [0, 0],
+        [100, 0],
+        [50, 80],
+        [0, 0],
+      ],
+    });
+    Keyboard.undo();
+    expect(
+      h.elements.filter((el) => !el.isDeleted).map(({ id }) => id),
+    ).toEqual(inputs.map(({ id }) => id));
+    Keyboard.redo();
+    expect(h.elements.filter((el) => !el.isDeleted)).toHaveLength(1);
+  });
+
+  it("reports an excessive join without deleting originals or changing selection", () => {
+    const inputs = [
+      line(Array.from({ length: MAX_JOIN_POINTS }, (_, i) => [i, i % 2])),
+      line([
+        [0, 0],
+        [100, 0],
+      ]),
+    ];
+    API.updateScene({
+      elements: inputs,
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
+    });
+    API.setSelectedElements(inputs);
+    const selection = { ...h.state.selectedElementIds };
+    const original = JSON.stringify(h.elements);
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      API.executeAction(actionJoinLines);
+      expect(h.state.toast?.message).toContain("too complex");
+      expect(JSON.stringify(h.elements)).toBe(original);
+      expect(h.state.selectedElementIds).toEqual(selection);
+    } finally {
+      errors.mockRestore();
+    }
+  });
+
+  it("keeps the scene usable when joining throws an unexpected error", () => {
+    const inputs = [
+      line([
+        [0, 0],
+        [100, 0],
+      ]),
+      line([
+        [100, 0],
+        [100, 100],
+      ]),
+    ];
+    API.updateScene({
+      elements: inputs,
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
+    });
+    API.setSelectedElements(inputs);
+    const original = JSON.stringify(h.elements);
+    const join = vi
+      .spyOn(lineOperations, "joinLines")
+      .mockImplementationOnce(() => {
+        throw new Error("Unexpected conversion failure");
+      });
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      API.executeAction(actionJoinLines);
+      expect(h.state.toast?.message).toContain("could not be joined");
+      expect(JSON.stringify(h.elements)).toBe(original);
+      join.mockRestore();
+      API.executeAction(actionJoinLines);
+      expect(h.elements.filter((el) => !el.isDeleted)).toHaveLength(1);
+      Keyboard.undo();
+      expect(
+        h.elements.filter((el) => !el.isDeleted).map(({ id }) => id),
+      ).toEqual(inputs.map(({ id }) => id));
+    } finally {
+      join.mockRestore();
+      errors.mockRestore();
+    }
   });
 
   it("joins from the panel, preserves stacking order, and restores originals with undo", () => {

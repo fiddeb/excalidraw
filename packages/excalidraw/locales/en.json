@@ -917,5 +917,9 @@
     "preview": "Preview of proposed native objects",
     "apply": "Apply changes",
     "stale": "The canvas changed while generating. Generate a new proposal before applying."
+  },
+  "lineJoin": {
+    "tooComplex": "These lines are too complex to join. Select fewer lines or reduce their points first. Originals were preserved.",
+    "failed": "The lines could not be joined. Originals were preserved."
   }
 }

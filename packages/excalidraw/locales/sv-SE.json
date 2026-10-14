@@ -890,5 +890,9 @@
     "preview": "Förhandsvisning av föreslagna native-objekt",
     "apply": "Lägg in ändringar",
     "stale": "Canvasen ändrades under genereringen. Skapa ett nytt förslag innan du lägger in det."
+  },
+  "lineJoin": {
+    "tooComplex": "Linjerna är för komplexa för att sammanfogas. Välj färre linjer eller minska antalet punkter först. Originalen har bevarats.",
+    "failed": "Linjerna kunde inte sammanfogas. Originalen har bevarats."
   }
 }

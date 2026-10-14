@@ -35,6 +35,15 @@ export const canJoinLines = (elements: readonly ExcalidrawElement[]) =>
   elements.every(isEditableOpenLine) &&
   elements.every((element) => element.frameId === elements[0].frameId);
 
+export const MAX_JOIN_LINES = 256;
+export const MAX_JOIN_POINTS = 10_000;
+
+export class LineJoinError extends Error {
+  constructor(public readonly reason: "tooComplex" | "invalidGeometry") {
+    super(`Cannot join lines: ${reason}`);
+  }
+}
+
 export const canCloseLine = <T extends ExcalidrawElement>(
   element: T,
 ): element is T & ExcalidrawLineElement =>
@@ -44,6 +53,7 @@ export const canCloseLine = <T extends ExcalidrawElement>(
 export const getLineOperationPoints = (
   element: ExcalidrawLineElement,
   elementsMap: ElementsMap,
+  maxPoints = Infinity,
 ): GlobalPoint[] => {
   if (!element.roundness || element.points.length < 3) {
     return LinearElementEditor.getPointsGlobalCoordinates(element, elementsMap);
@@ -67,9 +77,19 @@ export const getLineOperationPoints = (
         toGlobal(2),
         toGlobal(4),
       ];
-      points.push(
-        ...(pointsOnBezierCurves(curve, 0.5, 0.75) as GlobalPoint[]).slice(1),
-      );
+      if (curve.some(([x, y]) => !Number.isFinite(x) || !Number.isFinite(y))) {
+        throw new LineJoinError("invalidGeometry");
+      }
+      const sampled = pointsOnBezierCurves(curve, 0.5, 0.75) as GlobalPoint[];
+      if (points.length + sampled.length - 1 > maxPoints) {
+        throw new LineJoinError("tooComplex");
+      }
+      for (let i = 1; i < sampled.length; i++) {
+        points.push(sampled[i]);
+      }
+    }
+    if (points.length > maxPoints) {
+      throw new LineJoinError("tooComplex");
     }
   }
   return points;
@@ -108,9 +128,47 @@ export const joinLines = (
   elements: readonly ExcalidrawLineElement[],
   elementsMap: ElementsMap,
 ) => {
-  const remaining = elements.map((element) =>
-    getLineOperationPoints(element, elementsMap),
-  );
+  if (
+    elements.length > MAX_JOIN_LINES ||
+    elements.reduce((count, element) => count + element.points.length, 0) >
+      MAX_JOIN_POINTS
+  ) {
+    throw new LineJoinError("tooComplex");
+  }
+  if (
+    elements.length < 2 ||
+    elements.some(
+      (element) =>
+        ![element.x, element.y, element.angle].every(Number.isFinite) ||
+        element.points.some(
+          ([x, y]) => !Number.isFinite(x) || !Number.isFinite(y),
+        ),
+    )
+  ) {
+    throw new LineJoinError("invalidGeometry");
+  }
+  let pointCount = 0;
+  const remaining = elements.map((element) => {
+    const points = getLineOperationPoints(
+      {
+        ...element,
+        points: element.points.map(([x, y]) => pointFrom<LocalPoint>(x, y)),
+      },
+      elementsMap,
+      MAX_JOIN_POINTS - pointCount,
+    );
+    if (
+      points.length < 2 ||
+      points.some(([x, y]) => !Number.isFinite(x) || !Number.isFinite(y))
+    ) {
+      throw new LineJoinError("invalidGeometry");
+    }
+    pointCount += points.length;
+    if (pointCount > MAX_JOIN_POINTS) {
+      throw new LineJoinError("tooComplex");
+    }
+    return points;
+  });
   let points = remaining.shift()!;
   while (remaining.length) {
     let best = { index: 0, prepend: false, reverse: false, distance: Infinity };

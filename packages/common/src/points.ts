@@ -10,11 +10,21 @@ import type { NullableGridSize } from "@excalidraw/excalidraw/types";
 export const getSizeFromPoints = (
   points: readonly (GlobalPoint | LocalPoint)[],
 ) => {
-  const xs = points.map((point) => point[0]);
-  const ys = points.map((point) => point[1]);
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  // Avoid passing a point per argument: large imported paths exceed the
+  // engine's argument limit even though the calculation itself is cheap.
+  for (const [x, y] of points) {
+    minX = Math.min(minX, x);
+    maxX = Math.max(maxX, x);
+    minY = Math.min(minY, y);
+    maxY = Math.max(maxY, y);
+  }
   return {
-    width: Math.max(...xs) - Math.min(...xs),
-    height: Math.max(...ys) - Math.min(...ys),
+    width: maxX - minX,
+    height: maxY - minY,
   };
 };
 

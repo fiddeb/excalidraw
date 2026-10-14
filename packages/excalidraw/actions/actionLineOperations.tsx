@@ -10,6 +10,7 @@ import {
   closeLine,
   isEditableOpenLine,
   joinLines,
+  LineJoinError,
 } from "@excalidraw/element/lineOperations";
 import { LinearElementEditor } from "@excalidraw/element/linearElementEditor";
 import { newElementWith } from "@excalidraw/element/mutateElement";
@@ -33,29 +34,49 @@ export const actionJoinLines = register({
     if (!canJoinLines(selected) || !selected.every(isEditableOpenLine)) {
       return false;
     }
-    const line = joinLines(selected, app.scene.getNonDeletedElementsMap());
-    const selectedIds = new Set(selected.map(({ id }) => id));
-    const topId = selected[selected.length - 1].id;
-    const nextElements = elements.flatMap((element) => {
-      if (!selectedIds.has(element.id)) {
-        return [element];
-      }
-      const deleted = newElementWith(element, { isDeleted: true });
-      return element.id === topId ? [deleted, line] : [deleted];
-    });
-    return {
-      elements: nextElements,
-      appState: {
-        ...appState,
-        selectedElementIds: { [line.id]: true },
-        selectedGroupIds: {},
-        selectedLinearElement: new LinearElementEditor(
-          line,
-          arrayToMap(nextElements),
-        ),
-      },
-      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
-    };
+    try {
+      const line = joinLines(selected, app.scene.getNonDeletedElementsMap());
+      const selectedIds = new Set(selected.map(({ id }) => id));
+      const topId = selected[selected.length - 1].id;
+      const nextElements = elements.flatMap((element) => {
+        if (!selectedIds.has(element.id)) {
+          return [element];
+        }
+        const deleted = newElementWith(element, { isDeleted: true });
+        return element.id === topId ? [deleted, line] : [deleted];
+      });
+      return {
+        elements: nextElements,
+        appState: {
+          ...appState,
+          toast: null,
+          selectedElementIds: { [line.id]: true },
+          selectedGroupIds: {},
+          selectedLinearElement: new LinearElementEditor(
+            line,
+            arrayToMap(nextElements),
+          ),
+        },
+        captureUpdate: CaptureUpdateAction.IMMEDIATELY,
+      };
+    } catch (error) {
+      // Keep the original elements and selection intact if conversion fails.
+      console.error("Line joining failed", error);
+      return {
+        appState: {
+          ...appState,
+          toast: {
+            message:
+              error instanceof LineJoinError && error.reason === "tooComplex"
+                ? t("lineJoin.tooComplex")
+                : t("lineJoin.failed"),
+            closable: true,
+            duration: 6000,
+          },
+        },
+        captureUpdate: CaptureUpdateAction.EVENTUALLY,
+      };
+    }
   },
   PanelComponent: ({ appState, app, updateData }) =>
     canJoinLines(app.scene.getSelectedElements(appState)) ? (
